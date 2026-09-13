@@ -60,3 +60,4 @@ export const careCard = {
  *      optimized WebP in Supabase Storage.
  *   3. Attach the returned URL to the matching menu_items.image_url.
  */
+       
