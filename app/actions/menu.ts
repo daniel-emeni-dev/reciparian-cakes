@@ -22,7 +22,12 @@ export async function getMenuData() {
     return []
   }
 
-  return data
+  // image_alt_text is guaranteed non-null by the schema default, but
+  // fall back to the item name defensively in case older rows exist.
+  return data.map((item) => ({
+    ...item,
+    image_alt_text: item.image_alt_text || item.name,
+  }))
 }
 
 export async function getCategories() {

@@ -174,6 +174,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          zone_tier: Database["public"]["Enums"]["delivery_zone_tier"]
         }
         Insert: {
           created_at?: string
@@ -181,6 +182,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          zone_tier?: Database["public"]["Enums"]["delivery_zone_tier"]
         }
         Update: {
           created_at?: string
@@ -188,6 +190,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          zone_tier?: Database["public"]["Enums"]["delivery_zone_tier"]
         }
         Relationships: []
       }
@@ -198,6 +201,7 @@ export type Database = {
           description: string | null
           dietary_tags: string[]
           id: string
+          image_alt_text: string
           image_url: string | null
           is_available: boolean
           name: string
@@ -211,6 +215,7 @@ export type Database = {
           description?: string | null
           dietary_tags?: string[]
           id?: string
+          image_alt_text?: string
           image_url?: string | null
           is_available?: boolean
           name: string
@@ -224,6 +229,7 @@ export type Database = {
           description?: string | null
           dietary_tags?: string[]
           id?: string
+          image_alt_text?: string
           image_url?: string | null
           is_available?: boolean
           name?: string
@@ -484,6 +490,7 @@ export type Database = {
     }
     Enums: {
       cake_finish: "buttercream" | "fondant"
+      delivery_zone_tier: "ph_neighborhood" | "lga"
       fulfillment_type: "delivery" | "pickup"
       order_item_type: "menu_item" | "custom_cake"
       order_status:
@@ -624,6 +631,7 @@ export const Constants = {
   public: {
     Enums: {
       cake_finish: ["buttercream", "fondant"],
+      delivery_zone_tier: ["ph_neighborhood", "lga"],
       fulfillment_type: ["delivery", "pickup"],
       order_item_type: ["menu_item", "custom_cake"],
       order_status: [
