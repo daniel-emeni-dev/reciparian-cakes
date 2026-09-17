@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useCartStore } from '@/lib/store/cart'
+import { useCartUIStore } from '@/lib/store/cart-ui'
 
 interface MenuItem {
   id: string
@@ -134,6 +136,19 @@ export function InteractiveMenu({
 
 function MenuItemCard({ item }: { item: MenuItem }) {
   const isOutOfStock = item.stock_count !== null && item.stock_count <= 0
+  const addItem = useCartStore((state) => state.addItem)
+  const openCart = useCartUIStore((state) => state.open)
+
+  function handleAddToCart() {
+    addItem({
+      itemType: 'menu_item',
+      menuItemId: item.id,
+      itemName: item.name,
+      imageUrl: item.image_url,
+      unitPrice: item.price,
+    })
+    openCart()
+  }
 
   return (
     <div className="group flex flex-col justify-between overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm transition-shadow hover:shadow-md">
@@ -194,9 +209,7 @@ function MenuItemCard({ item }: { item: MenuItem }) {
         <button
           type="button"
           disabled={isOutOfStock}
-          onClick={() => {
-            alert(`Cart isn't wired up yet — coming in the next step.`)
-          }}
+          onClick={handleAddToCart}
           className="rounded-lg bg-brand-green px-3 py-1.5 text-sm font-semibold text-stone-900 shadow-sm transition-colors hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isOutOfStock ? 'Sold out' : 'Add to Cart +'}
