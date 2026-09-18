@@ -1,26 +1,26 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
-import { Pacifico } from 'next/font/google'
 import { CartButton } from './CartButton'
 import { CartDrawer } from './CartDrawer'
-
-const pacifico = Pacifico({ subsets: ['latin'], weight: '400' })
 
 export function SiteHeader() {
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-stone-100 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:px-6 lg:px-8">
-          <Link
-            href="/"
-            className={`${pacifico.className} flex-shrink truncate text-xl text-stone-900 sm:text-2xl`}
-          >
-            {/* Shorter wordmark on the narrowest screens, full name from
-                the small breakpoint up — avoids the overflow at ~412px
-                widths where the full name plus nav/icons has no room. */}
-            <span className="sm:hidden">Reciparian</span>
-            <span className="hidden sm:inline">Reciparian Cakes</span>
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-2.5 sm:px-6 lg:px-8">
+          <Link href="/" className="flex flex-shrink-0 items-center gap-2" aria-label="Reciparian Cakes home">
+            <Image
+              src="/reciparian-logo.png"
+              alt="Reciparian Cakes"
+              width={36}
+              height={36}
+              priority
+            />
+            <span className="hidden text-lg font-semibold text-stone-900 sm:inline">
+              Reciparian Cakes
+            </span>
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm font-medium text-stone-600 sm:flex">
