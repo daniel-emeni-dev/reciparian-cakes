@@ -1,15 +1,19 @@
+import type { Metadata } from 'next'
 import { Pacifico } from 'next/font/google'
 import { getMenuData, getCategories } from '@/app/actions/menu'
 import { InteractiveMenu } from '@/app/components/InteractiveMenu'
 
-// Cursive display font for the big emotional heading only — body
-// text, item names, and buttons stay on the clean sans-serif so
-// everything that needs to be read quickly stays legible.
 const pacifico = Pacifico({
   subsets: ['latin'],
   weight: '400',
   variable: '--font-pacifico',
 })
+
+export const metadata: Metadata = {       
+  title: 'Menu',   
+  description:
+    'Browse our full menu of cakes, cupcakes, pastries, and custom cake options. Fresh baked daily in Port Harcourt.',
+}
 
 export default async function MenuPage() {
   const [menuItems, categories] = await Promise.all([getMenuData(), getCategories()])
