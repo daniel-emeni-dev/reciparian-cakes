@@ -5,6 +5,7 @@ export interface Testimonial {
   customer_name: string
   rating: number
   message: string
+  avatar_url: string | null
 }
 
 export async function getPublishedTestimonials(): Promise<Testimonial[]> {
@@ -12,7 +13,7 @@ export async function getPublishedTestimonials(): Promise<Testimonial[]> {
 
   const { data, error } = await supabase
     .from('testimonials')
-    .select('id, customer_name, rating, message')
+    .select('id, customer_name, rating, message, avatar_url')
     .eq('is_published', true)
     .order('created_at', { ascending: false })
     .limit(12)
