@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useCartStore } from '@/lib/store/cart'
 import { useCartUIStore } from '@/lib/store/cart-ui'
 
@@ -36,7 +37,28 @@ export function InteractiveMenu({
 }) {
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Reads ?category= on first load so links from the home page's
+  // category cards land pre-filtered, instead of always opening on "all".
+  const initialCategory = searchParams.get('category') ?? 'all'
+  const [selectedCategory, setSelectedCategoryState] = useState<string>(initialCategory)
+
+  function setSelectedCategory(slug: string) {
+    setSelectedCategoryState(slug)
+    // Keep the URL in sync so the filter is shareable/bookmarkable and
+    // survives a refresh, without a full page navigation.
+    const params = new URLSearchParams(searchParams.toString())
+    if (slug === 'all') {
+      params.delete('category')
+    } else {
+      params.set('category', slug)
+    }
+    const query = params.toString()
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+  }
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedSearch(searchInput), 250)

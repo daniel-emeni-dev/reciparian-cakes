@@ -1,6 +1,7 @@
 import { getCategories } from '@/app/actions/menu'
 import { getPublishedTestimonials } from '@/app/actions/testimonials'
 import { Hero } from '@/app/components/Hero'
+import { StatsSection } from '@/app/components/StatsSection'
 import { CategoryShowcase } from '@/app/components/CategoryShowcase'
 import { TestimonialsCarousel } from '@/app/components/TestimonialsCarousel'
 import { FadeInSection } from '@/app/components/FadeInSection'
@@ -14,6 +15,8 @@ export default async function HomePage() {
   return (
     <main>
       <Hero />
+
+      <StatsSection />
 
       <CategoryShowcase categories={categories} />
 

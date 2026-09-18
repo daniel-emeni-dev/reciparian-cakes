@@ -34,7 +34,7 @@ export function Hero() {
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/menu"
-              className="rounded-xl bg-stone-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] hover:bg-stone-800"
+              className="rounded-xl bg-brand-pink-deep px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] hover:brightness-95"
             >
               Shop Fresh Pastries
             </Link>

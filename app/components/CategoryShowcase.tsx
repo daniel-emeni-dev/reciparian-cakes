@@ -21,7 +21,7 @@ export function CategoryShowcase({ categories }: { categories: Category[] }) {
           {categories.map((category, i) => (
             <FadeInSection key={category.id} delay={i * 0.1}>
               <Link
-                href="/menu"
+                href={`/menu?category=${category.slug}`}
                 className="group flex flex-col items-center justify-center rounded-2xl border border-stone-200 bg-white p-10 text-center shadow-sm transition-shadow hover:shadow-md"
               >
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-pink transition-colors group-hover:bg-brand-pink-medium">
