@@ -18,6 +18,7 @@
   --color-brand-pink-medium: #ffc1d6;
   --color-brand-yellow: #fff9d7;
   --color-brand-cream: #fffee0;
+  --color-brand-pink-deep: #e0839e;
 }
 
 @media (prefers-color-scheme: dark) {
