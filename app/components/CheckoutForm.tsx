@@ -34,6 +34,8 @@ type CheckoutFormValues = z.infer<typeof checkoutFormSchema>
 
 export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
   const items = useCartStore((state) => state.items)
+  const updateQuantity = useCartStore((state) => state.updateQuantity)
+  const removeItem = useCartStore((state) => state.removeItem)
   const totals = useCartTotals()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -107,18 +109,49 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Order summary */}
+      {/* Order summary — fully editable, same as the cart drawer */}
       <div className="rounded-xl border border-stone-200 bg-white p-5">
         <h2 className="mb-3 text-sm font-semibold text-stone-500">Order Summary</h2>
         <ul className="divide-y divide-stone-100">
           {items.map((item) => (
-            <li key={item.cartItemId} className="flex justify-between py-2 text-sm">
-              <span className="text-stone-700">
-                {item.quantity}× {item.itemName}
-              </span>
-              <span className="font-medium text-stone-900">
+            <li key={item.cartItemId} className="flex items-center justify-between gap-3 py-3">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-stone-700">{item.itemName}</p>
+                <p className="text-xs text-stone-500">{formatNaira(item.unitPrice)} each</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
+                  aria-label={`Decrease quantity of ${item.itemName}`}
+                  className="flex h-6 w-6 items-center justify-center rounded-full border border-stone-300 text-stone-600 hover:bg-stone-50"
+                >
+                  −
+                </button>
+                <span className="w-5 text-center text-sm">{item.quantity}</span>
+                <button
+                  type="button"
+                  onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
+                  aria-label={`Increase quantity of ${item.itemName}`}
+                  className="flex h-6 w-6 items-center justify-center rounded-full border border-stone-300 text-stone-600 hover:bg-stone-50"
+                >
+                  +
+                </button>
+              </div>
+
+              <span className="w-20 text-right text-sm font-medium text-stone-900">
                 {formatNaira(item.unitPrice * item.quantity)}
               </span>
+
+              <button
+                type="button"
+                onClick={() => removeItem(item.cartItemId)}
+                aria-label={`Remove ${item.itemName}`}
+                className="rounded-full p-1.5 text-stone-400 transition-colors hover:bg-red-50 hover:text-red-500"
+              >
+                <TrashIcon />
+              </button>
             </li>
           ))}
         </ul>
@@ -275,5 +308,19 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
         {isSubmitting ? 'Redirecting to payment...' : 'Proceed to Payment'}
       </button>
     </form>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M4 7h16M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m2 0v13a1 1 0 01-1 1H7a1 1 0 01-1-1V7h12zM10 11v6M14 11v6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useCartStore, useCartTotals } from '@/lib/store/cart'
@@ -64,12 +65,14 @@ export function CartDrawer() {
                 <ul className="space-y-4">
                   {items.map((item) => (
                     <li key={item.cartItemId} className="flex gap-3">
-                      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-brand-cream">
+                      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-brand-cream">
                         {item.imageUrl && (
-                          <img
+                          <Image
                             src={item.imageUrl}
                             alt=""
-                            className="h-full w-full object-cover"
+                            fill
+                            sizes="64px"
+                            className="object-cover"
                           />
                         )}
                       </div>
@@ -107,9 +110,9 @@ export function CartDrawer() {
                           type="button"
                           onClick={() => removeItem(item.cartItemId)}
                           aria-label={`Remove ${item.itemName}`}
-                          className="text-xs text-stone-400 underline hover:text-stone-600"
+                          className="rounded-full p-1.5 text-stone-400 transition-colors hover:bg-red-50 hover:text-red-500"
                         >
-                          Remove
+                          <TrashIcon />
                         </button>
                       </div>
                     </li>
@@ -142,5 +145,19 @@ export function CartDrawer() {
         </>
       )}
     </AnimatePresence>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M4 7h16M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m2 0v13a1 1 0 01-1 1H7a1 1 0 01-1-1V7h12zM10 11v6M14 11v6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }

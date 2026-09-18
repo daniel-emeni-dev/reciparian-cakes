@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import { useCartStore } from '@/lib/store/cart'
 import { useCartUIStore } from '@/lib/store/cart-ui'
 
@@ -155,10 +156,12 @@ function MenuItemCard({ item }: { item: MenuItem }) {
       <div>
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100">
           {item.image_url ? (
-            <img
+            <Image
               src={item.image_url}
               alt={item.image_alt_text}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
             <div
