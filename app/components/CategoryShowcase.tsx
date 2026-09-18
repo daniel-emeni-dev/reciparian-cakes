@@ -18,22 +18,32 @@ export function CategoryShowcase({ categories }: { categories: Category[] }) {
         </FadeInSection>
 
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {categories.map((category, i) => (
-            <FadeInSection key={category.id} delay={i * 0.1}>
-              <Link
-                href={`/menu?category=${category.slug}`}
-                className="group flex flex-col items-center justify-center rounded-2xl border border-stone-200 bg-white p-10 text-center shadow-sm transition-shadow hover:shadow-md"
-              >
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-pink transition-colors group-hover:bg-brand-pink-medium">
-                  <CakeIcon />
-                </div>
-                <h3 className="mt-4 text-lg font-bold text-stone-900">{category.name}</h3>
-                <span className="mt-1 text-sm text-stone-500 underline-offset-4 group-hover:underline">
-                  Browse menu
-                </span>
-              </Link>
-            </FadeInSection>
-          ))}
+          {categories.map((category, i) => {
+            // Custom cakes are priced parametrically, not stored as
+            // catalog rows, so they need their own configurator page
+            // rather than a menu filter (which would show nothing).
+            const href =
+              category.slug === 'custom-cakes'
+                ? '/custom-cakes'
+                : `/menu?category=${category.slug}`
+
+            return (
+              <FadeInSection key={category.id} delay={i * 0.1}>
+                <Link
+                  href={href}
+                  className="group flex flex-col items-center justify-center rounded-2xl border border-stone-200 bg-white p-10 text-center shadow-sm transition-shadow hover:shadow-md"
+                >
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-pink transition-colors group-hover:bg-brand-pink-medium">
+                    <CakeIcon />
+                  </div>
+                  <h3 className="mt-4 text-lg font-bold text-stone-900">{category.name}</h3>
+                  <span className="mt-1 text-sm text-stone-500 underline-offset-4 group-hover:underline">
+                    {category.slug === 'custom-cakes' ? 'Build your cake' : 'Browse menu'}
+                  </span>
+                </Link>
+              </FadeInSection>
+            )
+          })}
         </div>
       </div>
     </section>

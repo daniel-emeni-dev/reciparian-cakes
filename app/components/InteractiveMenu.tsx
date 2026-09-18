@@ -124,20 +124,33 @@ export function InteractiveMenu({
           >
             All
           </button>
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              type="button"
-              onClick={() => setSelectedCategory(category.slug)}
-              className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
-                selectedCategory === category.slug
-                  ? 'bg-brand-pink-medium text-stone-900'
-                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
+          {categories.map((category) =>
+            category.slug === 'custom-cakes' ? (
+              // Custom cakes are priced parametrically, not stored as
+              // catalog rows — this pill sends people to the real
+              // configurator instead of filtering to an empty grid.
+              <a
+                key={category.id}
+                href="/custom-cakes"
+                className="whitespace-nowrap rounded-full bg-stone-100 px-4 py-1.5 text-sm font-medium capitalize text-stone-600 transition-colors hover:bg-stone-200"
+              >
+                {category.name}
+              </a>
+            ) : (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => setSelectedCategory(category.slug)}
+                className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
+                  selectedCategory === category.slug
+                    ? 'bg-brand-pink-medium text-stone-900'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                {category.name}
+              </button>
+            )
+          )}
         </div>
       </div>
 

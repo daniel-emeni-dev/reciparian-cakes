@@ -19,6 +19,8 @@
   --color-brand-yellow: #fff9d7;
   --color-brand-cream: #fffee0;
   --color-brand-pink-deep: #e0839e;
+  --color-brand-espresso: #4a2e2a;
+  --color-brand-espresso-light: #6b453f;
 }
 
 @media (prefers-color-scheme: dark) {

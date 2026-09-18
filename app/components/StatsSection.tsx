@@ -8,7 +8,7 @@ export function StatsSection() {
   ]
 
   return (
-    <section className="bg-stone-900 px-4 py-16 sm:px-6 lg:px-8">
+    <section className="bg-brand-espresso px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-2xl grid-cols-1 gap-10 text-center sm:grid-cols-2">
         {stats.map((stat, i) => (
           <FadeInSection key={stat.label} delay={i * 0.15}>
