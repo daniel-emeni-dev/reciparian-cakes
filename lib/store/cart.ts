@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { calculateSubtotal, calculateTotals, type PricedLine } from '@/lib/cart'
+import { calculateLineTotal, calculateSubtotal, calculateTotals, type PricedLine } from '@/lib/cart'
 import type { CartLineItem } from '@/lib/validations/checkout'
 
 /**
@@ -112,7 +112,7 @@ export function useCartTotals() {
 
   const pricedLines: PricedLine[] = items.map((item) => ({
     ...item,
-    lineTotal: item.unitPrice * item.quantity,
+    lineTotal: calculateLineTotal(item.unitPrice, item.quantity),
   }))
 
   const subtotal = calculateSubtotal(pricedLines)

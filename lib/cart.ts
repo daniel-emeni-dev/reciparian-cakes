@@ -12,6 +12,10 @@ export interface CartTotals {
   total: number // kobo
 }
 
+export function calculateLineTotal(unitPrice: number, quantity: number): number {
+  return unitPrice * quantity
+}
+
 /**
  * Sums already-priced line items into a subtotal. Unit prices must
  * come from the database (menu_items.price, custom_cake_pricing.base_price
