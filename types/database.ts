@@ -204,6 +204,7 @@ export type Database = {
           image_alt_text: string
           image_url: string | null
           is_available: boolean
+          min_quantity: number
           name: string
           price: number
           stock_count: number | null
@@ -218,6 +219,7 @@ export type Database = {
           image_alt_text?: string
           image_url?: string | null
           is_available?: boolean
+          min_quantity?: number
           name: string
           price: number
           stock_count?: number | null
@@ -232,6 +234,7 @@ export type Database = {
           image_alt_text?: string
           image_url?: string | null
           is_available?: boolean
+          min_quantity?: number
           name?: string
           price?: number
           stock_count?: number | null
