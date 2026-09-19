@@ -36,14 +36,19 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
 
     for (const item of data.items) {
       if (item.itemType === 'menu_item') {
+        const menuItemId = item.menuItemId
+        if (!menuItemId) {
+          return { success: false, error: 'Missing menu item id.' }
+        }
+
         const { data: menuItem, error } = await admin
           .from('menu_items')
           .select('id, name, price, is_available')
-          .eq('id', item.menuItemId)
+          .eq('id', menuItemId)
           .single()
 
         if (error || !menuItem || !menuItem.is_available) {
-          return { success: false, error: `Item unavailable: ${item.menuItemId}` }
+          return { success: false, error: `Item unavailable: ${menuItemId}` }
         }
 
         pricedLines.push({
@@ -98,10 +103,15 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
     // --- Delivery fee lookup ---
     let deliveryFee = 0
     if (data.fulfillmentType === 'delivery') {
+      const deliveryZoneId = data.deliveryZoneId
+      if (!deliveryZoneId) {
+        return { success: false, error: 'Delivery zone is required.' }
+      }
+
       const { data: zone, error } = await admin
         .from('delivery_zones')
         .select('fee, is_active')
-        .eq('id', data.deliveryZoneId)
+        .eq('id', deliveryZoneId)
         .single()
 
       if (error || !zone || !zone.is_active) {

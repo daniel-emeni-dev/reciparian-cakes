@@ -3,11 +3,23 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #ffffff;
+  --muted: #fffee0;
+  --muted-foreground: #6b5f5c;
+  --border: #eee7e2;
+  --primary: #4a2e2a;
+  --primary-foreground: #fffee0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -27,6 +39,12 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --surface: #161211;
+    --muted: #211b19;
+    --muted-foreground: #b3a8a4;
+    --border: #2f2724;
+    --primary: #ffc1d6;
+    --primary-foreground: #4a2e2a;
   }
 }
 
