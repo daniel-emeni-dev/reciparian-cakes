@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
+import { MessageCircle } from 'lucide-react'
 import type {
   CakeFinish,
   CustomCakePriceRow,
@@ -12,12 +13,17 @@ import type {
 import { useCartStore } from '@/lib/store/cart'
 import { useCartUIStore } from '@/lib/store/cart-ui'
 import { formatNaira } from '@/lib/cart'
+import { buildWhatsAppLink } from '@/lib/whatsapp'
 
 interface Props {
   pricing: CustomCakePriceRow[]
   flavors: CustomCakeFlavorRow[]
   addons: CustomCakeAddonRow[]
 }
+
+const labelClass = 'text-xs font-medium text-muted-foreground'
+const inputClass =
+  'mt-2 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-brand-pink-medium sm:text-sm'
 
 export function CustomCakeConfigurator({ pricing, flavors, addons }: Props) {
   const [finish, setFinish] = useState<CakeFinish>('buttercream')
@@ -36,20 +42,29 @@ export function CustomCakeConfigurator({ pricing, flavors, addons }: Props) {
   )
   const [sizeInches, setSizeInches] = useState<number>(sizesForFinish[0]?.size_inches ?? 7)
 
+  // An add on without a real price cannot be sold online, so it is never shown.
+  const orderableAddons = useMemo(() => addons.filter((a) => a.price > 0), [addons])
+
   const selected = sizesForFinish.find((row) => row.size_inches === sizeInches)
   const selectedFlavor = flavors.find((f) => f.name === flavorName)
-  const selectedAddons = addons.filter((a) => selectedAddonIds.includes(a.id))
+  const selectedAddons = orderableAddons.filter((a) => selectedAddonIds.includes(a.id))
 
-  const knownAddonsTotal = selectedAddons.reduce((sum, a) => sum + a.price, 0)
-  const flavorUpcharge = selectedFlavor?.upcharge_amount ?? 0
-  const hasUnconfirmedCost =
-    (selectedFlavor && !selectedFlavor.is_included && selectedFlavor.upcharge_amount === null) ||
-    selectedAddonIds.length > 0 && selectedAddons.some((a) => a.price === 0)
+  // A null upcharge means the bakery has not confirmed a price, so the
+  // flavor can only be ordered through WhatsApp.
+  const flavorUpcharge = selectedFlavor?.upcharge_amount ?? null
+  const canOrderOnline = flavorUpcharge !== null
 
-  const runningTotal = (selected?.base_price ?? 0) + flavorUpcharge + knownAddonsTotal
+  const addonsTotal = selectedAddons.reduce((sum, a) => sum + a.price, 0)
+  const runningTotal = (selected?.base_price ?? 0) + (flavorUpcharge ?? 0) + addonsTotal
 
   function handleFinishChange(next: CakeFinish) {
     setFinish(next)
+
+    const keepsCurrentSize = pricing.some(
+      (row) => row.finish === next && row.size_inches === sizeInches
+    )
+    if (keepsCurrentSize) return
+
     const firstSize = pricing.find((row) => row.finish === next)?.size_inches
     if (firstSize) setSizeInches(firstSize)
   }
@@ -61,7 +76,7 @@ export function CustomCakeConfigurator({ pricing, flavors, addons }: Props) {
   }
 
   function handleAddToCart() {
-    if (!selected) return
+    if (!selected || !canOrderOnline) return
 
     addItem({
       itemType: 'custom_cake',
@@ -69,36 +84,68 @@ export function CustomCakeConfigurator({ pricing, flavors, addons }: Props) {
         finish,
         sizeInches,
         flavor: flavorName,
-        addonIds: selectedAddonIds,
-        customMessage: customMessage || undefined,
+        // Sorted so the same cake always matches the same cart line.
+        addonIds: [...selectedAddonIds].sort(),
+        customMessage: customMessage.trim() || undefined,
       },
       itemName: `Custom ${finish} cake (${sizeInches}")`,
       imageUrl: null,
       unitPrice: runningTotal,
     })
     openCart()
-    toast.success('Added to cart — final price confirmed by the bakery before payment.')
+    toast.success('Added to cart.')
   }
 
+  const orderLines = [
+    'Hello Reciparian, I would like to order a custom cake.',
+    `Finish: ${finish}`,
+    `Size: ${sizeInches} inches`,
+    `Flavor: ${flavorName}`,
+  ]
+  if (selectedAddons.length > 0) {
+    orderLines.push(`Extras: ${selectedAddons.map((a) => a.name).join(', ')}`)
+  }
+  if (customMessage.trim()) {
+    orderLines.push(`Message on cake: ${customMessage.trim()}`)
+  }
+  const whatsAppOrderLink = buildWhatsAppLink(orderLines.join('\n'))
+  const whatsAppQuestionLink = buildWhatsAppLink(
+    'Hello Reciparian, I have a question about a custom cake.'
+  )
+
+  const includedFlavors = flavors.filter((f) => f.is_included)
+  const extraFlavors = flavors.filter((f) => !f.is_included)
+
   return (
-    <div className="rounded-3xl bg-brand-cream p-6 shadow-sm ring-1 ring-black/5 sm:p-8">
-      <p className="text-sm text-stone-600">
-        Prices shown are the starting point for a simple design. Toppers, pictures, and
-        extra flavors may add to the total — we&apos;ll confirm the exact amount with you
-        directly before your cake is baked.
+    <div className="rounded-3xl bg-muted p-6 shadow-sm ring-1 ring-border sm:p-8">
+      <p className="text-sm text-muted-foreground">
+        Prices shown are for a simple design. For toppers, pictures or a bigger design,{' '}
+        <a
+          href={whatsAppQuestionLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-primary underline underline-offset-2"
+        >
+          message us on WhatsApp
+        </a>{' '}
+        first.
       </p>
 
-      {/* Finish */}
       <div className="mt-6">
-        <span className="text-xs font-medium text-stone-500">Finish</span>
-        <div className="mt-2 flex gap-2">
+        <span id="finish-label" className={labelClass}>
+          Finish
+        </span>
+        <div role="group" aria-labelledby="finish-label" className="mt-2 flex gap-2">
           {(['buttercream', 'fondant'] as const).map((option) => (
             <button
               key={option}
               type="button"
+              aria-pressed={finish === option}
               onClick={() => handleFinishChange(option)}
-              className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-medium capitalize transition-colors ${
-                finish === option ? 'bg-brand-pink-medium text-stone-900' : 'bg-white text-stone-500 hover:bg-stone-50'
+              className={`min-h-11 flex-1 rounded-xl px-4 py-2.5 text-sm font-medium capitalize transition-colors ${
+                finish === option
+                  ? 'bg-brand-pink-medium text-brand-espresso'
+                  : 'bg-surface text-muted-foreground hover:text-foreground'
               }`}
             >
               {option}
@@ -107,19 +154,21 @@ export function CustomCakeConfigurator({ pricing, flavors, addons }: Props) {
         </div>
       </div>
 
-      {/* Size */}
       <div className="mt-5">
-        <span className="text-xs font-medium text-stone-500">Size (diameter)</span>
-        <div className="mt-2 flex flex-wrap gap-2">
+        <span id="size-label" className={labelClass}>
+          Size (diameter)
+        </span>
+        <div role="group" aria-labelledby="size-label" className="mt-2 flex flex-wrap gap-2">
           {sizesForFinish.map((row) => (
             <button
               key={row.id}
               type="button"
+              aria-pressed={sizeInches === row.size_inches}
               onClick={() => setSizeInches(row.size_inches)}
-              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+              className={`min-h-10 min-w-12 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 sizeInches === row.size_inches
-                  ? 'bg-brand-espresso text-white'
-                  : 'bg-white text-stone-600 hover:bg-stone-50'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-surface text-muted-foreground hover:text-foreground'
               }`}
             >
               {row.size_inches}&quot;
@@ -128,82 +177,84 @@ export function CustomCakeConfigurator({ pricing, flavors, addons }: Props) {
         </div>
       </div>
 
-      {/* Flavor */}
       <div className="mt-5">
-        <span className="text-xs font-medium text-stone-500">Flavor</span>
+        <label htmlFor="cake-flavor" className={labelClass}>
+          Flavor
+        </label>
         <select
+          id="cake-flavor"
           value={flavorName}
           onChange={(e) => setFlavorName(e.target.value)}
-          className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-brand-pink-medium"
+          className={inputClass}
         >
           <optgroup label="Included">
-            {flavors
-              .filter((f) => f.is_included)
-              .map((f) => (
-                <option key={f.name} value={f.name}>
-                  {f.name}
-                </option>
-              ))}
+            {includedFlavors.map((f) => (
+              <option key={f.name} value={f.name}>
+                {f.name}
+              </option>
+            ))}
           </optgroup>
           <optgroup label="Extra cost">
-            {flavors
-              .filter((f) => !f.is_included)
-              .map((f) => (
-                <option key={f.name} value={f.name}>
-                  {f.name}
-                  {f.upcharge_amount ? ` (+${formatNaira(f.upcharge_amount)})` : ''}
-                </option>
-              ))}
+            {extraFlavors.map((f) => (
+              <option key={f.name} value={f.name}>
+                {f.name}
+                {f.upcharge_amount === null
+                  ? ' (order on WhatsApp)'
+                  : f.upcharge_amount > 0
+                    ? ` (+${formatNaira(f.upcharge_amount)})`
+                    : ''}
+              </option>
+            ))}
           </optgroup>
         </select>
       </div>
 
-      {/* Add-ons */}
-      {addons.length > 0 && (
+      {orderableAddons.length > 0 && (
         <div className="mt-5">
-          <span className="text-xs font-medium text-stone-500">Add-ons</span>
-          <div className="mt-2 space-y-2">
-            {addons.map((addon) => (
+          <span id="extras-label" className={labelClass}>
+            Extras
+          </span>
+          <div role="group" aria-labelledby="extras-label" className="mt-2 space-y-2">
+            {orderableAddons.map((addon) => (
               <label
                 key={addon.id}
-                className="flex items-center justify-between rounded-xl bg-white px-3 py-2.5 text-sm"
+                className="flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-xl bg-surface px-3 py-2.5 text-sm text-foreground"
               >
                 <span className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={selectedAddonIds.includes(addon.id)}
                     onChange={() => toggleAddon(addon.id)}
-                    className="rounded border-stone-300"
+                    className="h-4 w-4 accent-primary"
                   />
                   {addon.name}
                 </span>
-                <span className="text-stone-500">
-                  {addon.price > 0 ? `+${formatNaira(addon.price)}` : 'Price on request'}
-                </span>
+                <span className="text-muted-foreground">+{formatNaira(addon.price)}</span>
               </label>
             ))}
           </div>
         </div>
       )}
 
-      {/* Custom message */}
       <div className="mt-5">
-        <label className="text-xs font-medium text-stone-500">Message on cake (optional)</label>
+        <label htmlFor="cake-message" className={labelClass}>
+          Message on cake (optional)
+        </label>
         <input
+          id="cake-message"
           type="text"
           value={customMessage}
           onChange={(e) => setCustomMessage(e.target.value)}
           maxLength={120}
           placeholder="Happy Birthday, Ada!"
-          className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-pink-medium"
+          className={inputClass}
         />
       </div>
 
-      {/* Price + CTA */}
-      <div className="mt-7 flex items-end justify-between border-t border-stone-200 pt-5">
+      <div className="mt-7 flex flex-col gap-4 border-t border-border pt-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <span className="text-xs text-stone-500">
-            {hasUnconfirmedCost ? 'Starting at' : 'Total'}
+          <span className="text-xs text-muted-foreground">
+            {canOrderOnline ? 'Total' : 'Starting at'}
           </span>
           <AnimatePresence mode="wait">
             <motion.p
@@ -212,30 +263,43 @@ export function CustomCakeConfigurator({ pricing, flavors, addons }: Props) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.15 }}
-              className="text-3xl font-semibold text-stone-900"
+              className="text-3xl font-semibold text-foreground"
             >
-              {selected ? formatNaira(runningTotal) : '—'}
+              {selected ? formatNaira(runningTotal) : 'Not available'}
             </motion.p>
           </AnimatePresence>
-          {hasUnconfirmedCost && (
-            <p className="mt-1 text-xs text-stone-500">
-              This selection costs more than the base price — we&apos;ll confirm the exact
-              total with you before baking.
+          {!canOrderOnline && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {flavorName} costs more than the base price. Message us on WhatsApp for the exact
+              total.
             </p>
           )}
         </div>
-        <button
-          type="button"
-          disabled={!selected}
-          onClick={handleAddToCart}
-          className="rounded-xl bg-brand-green px-5 py-2.5 text-sm font-semibold text-stone-900 transition-colors hover:brightness-95 disabled:opacity-50"
-        >
-          Add to cart
-        </button>
+
+        {canOrderOnline ? (
+          <button
+            type="button"
+            disabled={!selected}
+            onClick={handleAddToCart}
+            className="min-h-11 w-full rounded-xl bg-brand-green px-5 py-2.5 text-sm font-semibold text-brand-espresso transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+          >
+            Add to cart
+          </button>
+        ) : (
+          <a
+            href={whatsAppOrderLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-whatsapp px-5 py-2.5 text-sm font-semibold text-whatsapp-foreground transition hover:brightness-95 sm:w-auto"
+          >
+            <MessageCircle size={16} aria-hidden="true" />
+            Order via WhatsApp
+          </a>
+        )}
       </div>
 
-      <p className="mt-3 text-xs text-stone-500">
-        Cakes are 4.5&quot; high by default — taller cakes cost more based on design and size.
+      <p className="mt-3 text-xs text-muted-foreground">
+        Cakes are 4.5 inches high by default. Taller cakes cost more based on design and size.
       </p>
     </div>
   )

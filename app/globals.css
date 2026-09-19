@@ -35,6 +35,8 @@
   --color-brand-pink-deep: #e0839e;
   --color-brand-espresso: #4a2e2a;
   --color-brand-espresso-light: #6b453f;
+  --color-whatsapp: #25d366;
+  --color-whatsapp-foreground: #0b2e17;
 }
 
 @media (prefers-color-scheme: dark) {
