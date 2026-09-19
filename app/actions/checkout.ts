@@ -20,6 +20,12 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
   }
   const data = parsed.data
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  if (!siteUrl) {
+    console.error('Checkout: NEXT_PUBLIC_SITE_URL is not set')
+    return { success: false, error: 'Something went wrong. Please try again.' }
+  }
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -48,7 +54,11 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
           .single()
 
         if (error || !menuItem || !menuItem.is_available) {
-          return { success: false, error: `Item unavailable: ${menuItemId}` }
+          console.error('Checkout: menu item unavailable', menuItemId, error)
+          return {
+            success: false,
+            error: 'One of the items in your cart is no longer available. Please review your cart.',
+          }
         }
 
         pricedLines.push({
@@ -58,7 +68,11 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
           lineTotal: menuItem.price * item.quantity,
         })
       } else {
-        const config = item.customCakeConfig!
+        const config = item.customCakeConfig
+        if (!config) {
+          return { success: false, error: 'Invalid custom cake configuration.' }
+        }
+
         const { data: pricing, error } = await admin
           .from('custom_cake_pricing')
           .select('base_price')
@@ -102,7 +116,8 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
 
     // --- Delivery fee lookup ---
     let deliveryFee = 0
-    if (data.fulfillmentType === 'delivery') {
+    const isDelivery = data.fulfillmentType === 'delivery'
+    if (isDelivery) {
       const deliveryZoneId = data.deliveryZoneId
       if (!deliveryZoneId) {
         return { success: false, error: 'Delivery zone is required.' }
@@ -124,17 +139,20 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
     const orderReference = generateOrderReference()
 
     // --- Create the pending order ---
+    // paystack_reference is written here, not in a later update: if a follow up
+    // write failed, the webhook could never find a paid order.
     const { data: order, error: orderError } = await admin
       .from('orders')
       .insert({
         order_reference: orderReference,
+        paystack_reference: orderReference,
         user_id: user?.id ?? null,
         customer_name: data.customerName,
         customer_email: data.customerEmail,
         customer_phone: data.customerPhone,
         fulfillment_type: data.fulfillmentType,
-        delivery_zone_id: data.deliveryZoneId ?? null,
-        delivery_address: data.deliveryAddress ?? null,
+        delivery_zone_id: isDelivery ? (data.deliveryZoneId ?? null) : null,
+        delivery_address: isDelivery ? (data.deliveryAddress ?? null) : null,
         pickup_notes: data.pickupNotes ?? null,
         subtotal: totals.subtotal,
         delivery_fee: totals.deliveryFee,
@@ -171,19 +189,14 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
       email: data.customerEmail,
       amountKobo: totals.total,
       reference: orderReference,
-      callbackUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/verify?reference=${orderReference}`,
+      callbackUrl: `${siteUrl}/checkout/verify`,
       metadata: {
         order_id: order.id,
         order_reference: orderReference,
         fulfillment_type: data.fulfillmentType,
-        delivery_address: data.deliveryAddress ?? null,
+        delivery_address: isDelivery ? (data.deliveryAddress ?? null) : null,
       },
     })
-
-    await admin
-      .from('orders')
-      .update({ paystack_reference: paystack.data.reference })
-      .eq('id', order.id)
 
     return {
       success: true,
