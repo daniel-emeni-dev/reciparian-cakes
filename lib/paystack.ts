@@ -2,6 +2,7 @@ import 'server-only'
 import crypto from 'crypto'
 
 const PAYSTACK_BASE_URL = 'https://api.paystack.co'
+const REQUEST_TIMEOUT_MS = 15_000
 
 interface InitializeTransactionParams {
   email: string
@@ -40,10 +41,12 @@ export async function initializeTransaction(
     body: JSON.stringify({
       email: params.email,
       amount: params.amountKobo,
+      currency: 'NGN',
       reference: params.reference,
       callback_url: params.callbackUrl,
       metadata: params.metadata,
     }),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   })
 
   if (!response.ok) {
@@ -63,14 +66,20 @@ export function verifyPaystackSignature(rawBody: string, signature: string | nul
   const secretKey = process.env.PAYSTACK_SECRET_KEY
   if (!secretKey || !signature) return false
 
-  const hash = crypto.createHmac('sha512', secretKey).update(rawBody).digest('hex')
-  return hash === signature
+  const expected = crypto.createHmac('sha512', secretKey).update(rawBody).digest()
+  const received = Buffer.from(signature, 'hex')
+
+  // timingSafeEqual throws when lengths differ, so guard first.
+  if (expected.length !== received.length) return false
+  return crypto.timingSafeEqual(expected, received)
 }
 
 /**
- * Generates a deterministic, collision-resistant order reference.
+ * Paystack only accepts letters, digits, "-", "." and "=" in a reference,
+ * so no underscores. The random part is long on purpose: the reference is
+ * the only secret protecting the public order status endpoint.
  */
 export function generateOrderReference(): string {
-  const random = crypto.randomBytes(4).toString('hex')
-  return `ORD_${Date.now()}_${random}`
+  const random = crypto.randomBytes(8).toString('hex')
+  return `ORD-${Date.now()}-${random}`
 }
