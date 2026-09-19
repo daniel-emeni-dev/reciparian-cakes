@@ -9,6 +9,7 @@
   --border: #eee7e2;
   --primary: #4a2e2a;
   --primary-foreground: #fffee0;
+  --danger: #b42318;
 }
 
 @theme inline {
@@ -20,6 +21,7 @@
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -45,6 +47,7 @@
     --border: #2f2724;
     --primary: #ffc1d6;
     --primary-foreground: #4a2e2a;
+    --danger: #f97066;
   }
 }
 
