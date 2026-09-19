@@ -11,8 +11,8 @@ export const cartLineItemSchema = z.object({
       finish: z.enum(['buttercream', 'fondant']),
       sizeInches: z.number().int().positive(),
       flavor: z.string().min(1),
-      addonIds: z.array(z.string().uuid()).default([]),
-      customMessage: z.string().max(120).optional(),
+      addonIds: z.array(z.string().uuid()).max(10).default([]),
+      customMessage: z.string().trim().max(120).optional(),
     })
     .optional(),
 }).refine(
@@ -23,14 +23,18 @@ export const cartLineItemSchema = z.object({
 )
 
 export const checkoutSchema = z.object({
-  customerName: z.string().min(2).max(100),
-  customerEmail: z.string().email(),
-  customerPhone: z.string().min(7).max(20),
+  customerName: z.string().trim().min(2).max(100),
+  // Lowercased so guest orders link to accounts by exact email regardless of how it was typed.
+  customerEmail: z.string().trim().toLowerCase().email(),
+  customerPhone: z
+    .string()
+    .trim()
+    .regex(/^\+?[0-9\s-]{7,20}$/, 'Enter a valid phone number'),
 
   fulfillmentType: z.enum(['delivery', 'pickup']),
   deliveryZoneId: z.string().uuid().optional(),
-  deliveryAddress: z.string().min(5).max(300).optional(),
-  pickupNotes: z.string().max(300).optional(),
+  deliveryAddress: z.string().trim().min(5).max(300).optional(),
+  pickupNotes: z.string().trim().max(300).optional(),
 
   items: z.array(cartLineItemSchema).min(1),
 }).refine(
