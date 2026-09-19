@@ -13,7 +13,7 @@ interface CheckoutVerifyPageProps {
 
 export default async function CheckoutVerifyPage({ searchParams }: CheckoutVerifyPageProps) {
   const { reference } = await searchParams
-  const orderReference = typeof reference === 'string' ? reference : null
+  const orderReference = Array.isArray(reference) ? (reference[0] ?? null) : (reference ?? null)
 
   return (
     <main className="min-h-screen bg-background px-4 py-10 sm:py-16">
