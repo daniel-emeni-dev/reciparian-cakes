@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useSyncExternalStore } from 'react'
-import Link from 'next/link'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -11,6 +10,8 @@ import { useCartStore, useCartTotals } from '@/lib/store/cart'
 import { calculateLineTotal, calculateTotals, formatNaira } from '@/lib/cart'
 import { checkout } from '@/app/actions/checkout'
 import type { DeliveryZone } from '@/app/actions/delivery-zones'
+import { useHasMounted } from '@/lib/hooks/use-has-mounted'
+import { EmptyCartState } from '@/app/components/EmptyCartState'
 
 const checkoutFormSchema = z
   .object({
@@ -43,14 +44,10 @@ const labelClass = 'text-sm font-medium text-foreground'
 const inputClass =
   'mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-base text-foreground outline-none focus:border-brand-pink-medium focus:ring-2 focus:ring-brand-pink-medium sm:text-sm'
 const stepperButtonClass =
-  'flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted'
+  'flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent'
 
 // The persisted cart only exists in the browser, so the server render and
 // the first client render must match (skeleton) before showing real items.
-const subscribeNoop = () => () => {}
-function useHasMounted(): boolean {
-  return useSyncExternalStore(subscribeNoop, () => true, () => false)
-}
 
 export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
   const hasMounted = useHasMounted()
@@ -133,16 +130,10 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
     return <CheckoutSkeleton />
   }
 
-  if (items.length === 0) {
+    if (items.length === 0) {
     return (
-      <div className={`${cardClass} p-8 text-center`}>
-        <p className="text-muted-foreground">Your cart is empty.</p>
-        <Link
-          href="/menu"
-          className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:brightness-95"
-        >
-          Browse the menu
-        </Link>
+      <div className={cardClass}>
+        <EmptyCartState />
       </div>
     )
   }
@@ -158,6 +149,9 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground">{item.itemName}</p>
                   <p className="text-xs text-muted-foreground">{formatNaira(item.unitPrice)} each</p>
+                  {item.minQuantity > 1 && (
+                    <p className="text-xs text-muted-foreground">Minimum order {item.minQuantity}</p>
+                  )}
                 </div>
                 <span className="text-sm font-semibold text-foreground">
                   {formatNaira(calculateLineTotal(item.unitPrice, item.quantity))}
@@ -170,6 +164,7 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
                     type="button"
                     onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
                     aria-label={`Decrease quantity of ${item.itemName}`}
+                    disabled={item.minQuantity > 1 && item.quantity <= item.minQuantity}
                     className={stepperButtonClass}
                   >
                     <Minus size={14} aria-hidden="true" />
@@ -268,9 +263,8 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
 
         <div className="flex gap-2 rounded-xl bg-muted p-1">
           <label
-            className={`flex-1 rounded-lg py-2 text-center text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-pink-medium ${
-              hasZones ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
-            } ${fulfillmentType === 'delivery' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground'}`}
+            className={`flex-1 rounded-lg py-2 text-center text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-pink-medium ${hasZones ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+              } ${fulfillmentType === 'delivery' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground'}`}
           >
             <input
               type="radio"
@@ -282,9 +276,8 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
             Delivery
           </label>
           <label
-            className={`flex-1 cursor-pointer rounded-lg py-2 text-center text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-pink-medium ${
-              fulfillmentType === 'pickup' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground'
-            }`}
+            className={`flex-1 cursor-pointer rounded-lg py-2 text-center text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-pink-medium ${fulfillmentType === 'pickup' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground'
+              }`}
           >
             <input type="radio" value="pickup" {...register('fulfillmentType')} className="sr-only" />
             Pickup
