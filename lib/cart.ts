@@ -25,6 +25,10 @@ export function calculateSubtotal(lines: PricedLine[]): number {
   return lines.reduce((sum, line) => sum + line.lineTotal, 0)
 }
 
+export function calculateItemCount(lines: { quantity: number }[]): number {
+  return lines.reduce((sum, line) => sum + line.quantity, 0)
+}
+
 export function calculateTotals(subtotal: number, deliveryFee: number): CartTotals {
   return {
     subtotal,
