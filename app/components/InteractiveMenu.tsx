@@ -2,9 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { Cake, X } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { useCartUIStore } from '@/lib/store/cart-ui'
+import { formatNaira } from '@/lib/cart'
 
 interface MenuItem {
   id: string
@@ -15,6 +18,7 @@ interface MenuItem {
   image_alt_text: string
   dietary_tags: string[]
   stock_count: number | null
+  min_quantity: number
   categories: { name: string; slug: string } | null
 }
 
@@ -24,9 +28,10 @@ interface Category {
   slug: string
 }
 
-function formatNaira(kobo: number): string {
-  return `₦${(kobo / 100).toLocaleString('en-NG')}`
-}
+const pillClass =
+  'inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium capitalize transition-colors'
+const pillActiveClass = 'bg-brand-pink-medium text-brand-espresso'
+const pillIdleClass = 'bg-muted text-muted-foreground hover:text-foreground'
 
 export function InteractiveMenu({
   initialItems,
@@ -48,8 +53,8 @@ export function InteractiveMenu({
 
   function setSelectedCategory(slug: string) {
     setSelectedCategoryState(slug)
-    // Keep the URL in sync so the filter is shareable/bookmarkable and
-    // survives a refresh, without a full page navigation.
+    // Keeps the URL in sync so the filter is shareable and survives a
+    // refresh, without a full page navigation.
     const params = new URLSearchParams(searchParams.toString())
     if (slug === 'all') {
       params.delete('category')
@@ -83,31 +88,24 @@ export function InteractiveMenu({
 
   return (
     <div>
-      {/* Control panel */}
-      <div className="mb-8 flex flex-col gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-8 flex flex-col gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-xs">
           <input
             type="text"
+            aria-label="Search the menu"
             placeholder="Search pastries, breads, cakes..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full rounded-lg border border-stone-300 px-4 py-2 pr-9 text-sm outline-none transition-shadow focus:border-brand-pink-medium focus:ring-2 focus:ring-brand-pink-medium"
+            className="w-full rounded-lg border border-border bg-surface px-4 py-2.5 pr-10 text-base text-foreground outline-none transition-shadow placeholder:text-muted-foreground focus:border-brand-pink-medium focus:ring-2 focus:ring-brand-pink-medium sm:text-sm"
           />
           {searchInput && (
             <button
               type="button"
               onClick={() => setSearchInput('')}
               aria-label="Clear search"
-              className="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
+              className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path
-                  d="M1 1l12 12M13 1L1 13"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <X size={14} aria-hidden="true" />
             </button>
           )}
         </div>
@@ -116,35 +114,29 @@ export function InteractiveMenu({
           <button
             type="button"
             onClick={() => setSelectedCategory('all')}
-            className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
-              selectedCategory === 'all'
-                ? 'bg-brand-pink-medium text-stone-900'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-            }`}
+            className={`${pillClass} ${selectedCategory === 'all' ? pillActiveClass : pillIdleClass}`}
           >
             All
           </button>
           {categories.map((category) =>
             category.slug === 'custom-cakes' ? (
-              // Custom cakes are priced parametrically, not stored as
-              // catalog rows — this pill sends people to the real
-              // configurator instead of filtering to an empty grid.
-              <a
+              // Custom cakes are priced by size and finish, not stored as
+              // catalog rows, so this pill opens the configurator instead of
+              // filtering down to an empty grid.
+              <Link
                 key={category.id}
                 href="/custom-cakes"
-                className="whitespace-nowrap rounded-full bg-stone-100 px-4 py-1.5 text-sm font-medium capitalize text-stone-600 transition-colors hover:bg-stone-200"
+                className={`${pillClass} ${pillIdleClass}`}
               >
                 {category.name}
-              </a>
+              </Link>
             ) : (
               <button
                 key={category.id}
                 type="button"
                 onClick={() => setSelectedCategory(category.slug)}
-                className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
-                  selectedCategory === category.slug
-                    ? 'bg-brand-pink-medium text-stone-900'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                className={`${pillClass} ${
+                  selectedCategory === category.slug ? pillActiveClass : pillIdleClass
                 }`}
               >
                 {category.name}
@@ -154,9 +146,8 @@ export function InteractiveMenu({
         </div>
       </div>
 
-      {/* Grid */}
       {filteredItems.length === 0 ? (
-        <div className="py-12 text-center text-stone-500">
+        <div className="py-12 text-center text-muted-foreground">
           No items found matching your search.
         </div>
       ) : (
@@ -171,9 +162,14 @@ export function InteractiveMenu({
 }
 
 function MenuItemCard({ item }: { item: MenuItem }) {
-  const isOutOfStock = item.stock_count !== null && item.stock_count <= 0
   const addItem = useCartStore((state) => state.addItem)
   const openCart = useCartUIStore((state) => state.open)
+
+  // Stock below the minimum order cannot be sold, so it counts as sold out.
+  const isOutOfStock = item.stock_count !== null && item.stock_count < item.min_quantity
+  const hasMinimum = item.min_quantity > 1
+
+  const addLabel = hasMinimum ? `Add ${item.min_quantity} to cart` : 'Add to cart'
 
   function handleAddToCart() {
     addItem({
@@ -182,14 +178,15 @@ function MenuItemCard({ item }: { item: MenuItem }) {
       itemName: item.name,
       imageUrl: item.image_url,
       unitPrice: item.price,
+      minQuantity: item.min_quantity,
     })
     openCart()
   }
 
   return (
-    <div className="group flex flex-col justify-between overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <div className="group flex flex-col justify-between overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md">
       <div>
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100">
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           {item.image_url ? (
             <Image
               src={item.image_url}
@@ -202,9 +199,9 @@ function MenuItemCard({ item }: { item: MenuItem }) {
             <div
               role="img"
               aria-label={item.image_alt_text}
-              className="flex h-full w-full flex-col items-center justify-center gap-2 bg-brand-cream text-stone-400"
+              className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted text-muted-foreground"
             >
-              <CupcakeIcon />
+              <Cake size={32} aria-hidden="true" />
               <span className="text-sm">Photo coming soon</span>
             </div>
           )}
@@ -214,7 +211,7 @@ function MenuItemCard({ item }: { item: MenuItem }) {
               {item.dietary_tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded bg-white/90 px-2 py-0.5 text-xs font-bold text-stone-800 shadow-sm backdrop-blur-sm"
+                  className="rounded bg-surface/90 px-2 py-0.5 text-xs font-bold text-foreground shadow-sm backdrop-blur-sm"
                 >
                   {tag}
                 </span>
@@ -223,8 +220,8 @@ function MenuItemCard({ item }: { item: MenuItem }) {
           )}
 
           {isOutOfStock && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-              <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-900">
+            <div className="absolute inset-0 flex items-center justify-center bg-brand-espresso/50">
+              <span className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-foreground">
                 Sold out today
               </span>
             </div>
@@ -232,40 +229,37 @@ function MenuItemCard({ item }: { item: MenuItem }) {
         </div>
 
         <div className="p-5">
-          <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {item.categories?.name}
           </span>
-          <h3 className="mt-1 text-lg font-bold text-stone-900">{item.name}</h3>
+          <h3 className="mt-1 text-lg font-bold text-foreground">{item.name}</h3>
           {item.description && (
-            <p className="mt-1 line-clamp-2 text-sm text-stone-600">{item.description}</p>
+            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{item.description}</p>
+          )}
+          {hasMinimum && (
+            <p className="mt-2 text-xs font-medium text-foreground">
+              Minimum order {item.min_quantity}
+            </p>
           )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-stone-100 bg-stone-50/50 px-5 pb-5 pt-2">
-        <span className="text-xl font-bold text-stone-900">{formatNaira(item.price)}</span>
+      <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/50 px-5 pb-5 pt-3">
+        <span className="text-xl font-bold text-foreground">
+          {formatNaira(item.price)}
+          {hasMinimum && (
+            <span className="ml-1 text-xs font-normal text-muted-foreground">each</span>
+          )}
+        </span>
         <button
           type="button"
           disabled={isOutOfStock}
           onClick={handleAddToCart}
-          className="rounded-lg bg-brand-green px-3 py-1.5 text-sm font-semibold text-stone-900 shadow-sm transition-colors hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+          className="min-h-10 rounded-lg bg-brand-green px-3 py-2 text-sm font-semibold text-brand-espresso shadow-sm transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isOutOfStock ? 'Sold out' : 'Add to Cart +'}
+          {isOutOfStock ? 'Sold out' : addLabel}
         </button>
       </div>
     </div>
-  )
-}
-
-function CupcakeIcon() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 2c-1.1 0-2 .9-2 2 0 .3.1.6.2.8C8.3 5.4 7 6.8 7 8.5V9H5.5C4.7 9 4 9.7 4 10.5c0 .3.1.6.3.9L6.5 20h11l2.2-8.6c.1-.3.3-.6.3-.9 0-.8-.7-1.5-1.5-1.5H17v-.5c0-1.7-1.3-3.1-3.2-3.7.1-.2.2-.5.2-.8 0-1.1-.9-2-2-2z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
   )
 }
