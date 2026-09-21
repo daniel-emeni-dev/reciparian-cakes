@@ -3,12 +3,14 @@ import { clsx } from 'clsx'
 import { formatNaira } from '@/lib/cart'
 import { formatDateTime } from '@/lib/format-date'
 import { buildCustomerWhatsAppLink } from '@/lib/whatsapp'
+import { AdminOrderActions } from '@/app/components/AdminOrderActions'
 import {
   ORDER_STATUS_LABELS,
   buildCustomerMessage,
   describeCakeConfig,
   type AdminOrder,
   type OrderStatus,
+  getOrderActions
 } from '@/lib/admin-orders'
 
 const STATUS_STYLES: Record<OrderStatus, string> = {
@@ -132,7 +134,7 @@ export function AdminOrderCard({ order, addonNames }: AdminOrderCardProps) {
           <Phone className="h-4 w-4" aria-hidden="true" />
           Call
         </a>
-                {whatsappLink && (
+        {whatsappLink && (
           <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className={CONTACT_BUTTON}>
             <MessageCircle className="h-4 w-4" aria-hidden="true" />
             WhatsApp
@@ -140,6 +142,10 @@ export function AdminOrderCard({ order, addonNames }: AdminOrderCardProps) {
         )}
         <span className="text-sm text-muted-foreground">{order.customer_phone}</span>
       </div>
+      <AdminOrderActions
+        orderId={order.id}
+        actions={getOrderActions(order.status, order.fulfillment_type)}
+      />
     </article>
   )
 }
