@@ -181,3 +181,31 @@ export function describeCakeConfig(
 
   return details
 }
+
+type FulfillmentType = Database['public']['Enums']['fulfillment_type']
+
+export interface OrderAction {
+  status: OrderStatus
+  label: string
+  destructive: boolean
+}
+
+export function getOrderActions(status: OrderStatus, fulfillmentType: FulfillmentType): OrderAction[] {
+  const cancel: OrderAction = { status: 'cancelled', label: 'Cancel order', destructive: true }
+  const complete: OrderAction = {
+    status: 'completed',
+    label: fulfillmentType === 'delivery' ? 'Mark delivered' : 'Mark collected',
+    destructive: false,
+  }
+
+  switch (status) {
+    case 'awaiting_dispatch':
+      return [{ status: 'out_for_delivery', label: 'Out for delivery', destructive: false }, cancel]
+    case 'ready_for_prep':
+    case 'out_for_delivery':
+    case 'paid':
+      return [complete, cancel]
+    default:
+      return []
+  }
+}
