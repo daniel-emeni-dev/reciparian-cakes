@@ -1,31 +1,33 @@
 # Reciparian Cakes
 
-Reciparian Cakes is a Next.js storefront and ordering platform for a boutique bakery. The project combines a customer-facing menu and cart experience with Supabase-powered authentication, a Postgres order flow, and Paystack-based payment processing.
+This project is a bakery storefront and ordering platform built with Next.js, Supabase, and Paystack. It brings together the customer-facing storefront, authentication, cart, checkout, payment flow, and backend data model into a single working system.
 
-This README consolidates the project documentation into one source of truth, covering setup, data model, feature flow, and current implementation status.
+This README combines the earlier project notes, the backend setup guidance, and the later homepage v3 improvements into one explanatory guide.
 
-## Overview
+## What the app does
 
-The application is built around a typical bakery ordering flow:
+The core customer journey is:
 
-- browse menu items and custom cakes
-- add items to a persistent cart
+- browse the menu and custom cake options
+- add products to a persistent cart
 - choose delivery or pickup
-- submit checkout form
-- pay via Paystack
-- wait for webhook-driven verification
-- confirm order status and customer follow-up
+- complete checkout
+- pay securely through Paystack
+- receive webhook-driven order verification
+- continue through the post-purchase confirmation flow
 
-The stack is:
+This is a full-stack bakery ordering app rather than a purely static storefront.
 
-- Next.js 16 (App Router)
+## Tech stack
+
+- Next.js 16 with App Router
 - React 19
 - TypeScript
 - Tailwind CSS
-- Supabase Auth + Postgres
-- Paystack
+- Supabase Postgres + Auth
+- Paystack payment integration
 - Zustand for cart state
-- Framer Motion for UI transitions
+- Framer Motion for interactions and drawer animation
 
 ## Project structure
 
@@ -36,6 +38,7 @@ The stack is:
 │   ├── api/
 │   ├── auth/
 │   ├── components/
+│   ├── custom-cakes/
 │   ├── login/
 │   ├── menu/
 │   ├── signup/
@@ -49,29 +52,30 @@ The stack is:
 ├── reciparian-backend/
 ├── supabase/
 ├── types/
+├── .env.example
 ├── package.json
 ├── next.config.ts
 ├── eslint.config.mjs
 ├── proxy.ts
-├── .gitignore
-└── README.md
+├── README.md
+└── ...
 ```
 
 ## Local setup
 
-1. Install dependencies:
+1. Install project dependencies:
 
 ```bash
 npm install
 ```
 
-2. Create a local environment file:
+2. Create your local environment file:
 
 ```bash
 cp .env.example .env.local
 ```
 
-If there is no `.env.example` file in the project root, add the values manually in `.env.local` using the keys the app expects, including:
+If the project does not yet have a `.env.example`, add the values manually. Typical variables include:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
@@ -84,128 +88,158 @@ PAYSTACK_WEBHOOK_SECRET=
 CRON_SECRET=
 ```
 
-3. Start the app:
+3. Run the app:
 
 ```bash
 npm run dev
 ```
 
-4. Open the local app in the browser and verify the menu, auth, and checkout flows.
-
-## Database and migrations
-
-Supabase is the primary backend data layer. The database schema and policies are run through migration files in the project.
-
-Migration order used by the project:
-
-1. `supabase/migrations/0001_init_schema.sql`
-2. `supabase/migrations/0002_rls_policies.sql`
-3. `supabase/migrations/0003_functions_triggers.sql`
-4. `supabase/migrations/0004_delivery_zone_tiers.sql`
-5. `supabase/migrations/0005_seed_real_data.sql`
-
-These provide the tables for:
-
-- categories and menu items
-- custom cake pricing and flavors
-- delivery zones and fees
-- profiles and addresses
-- orders and order items
-- wishlist and other storefront data
-
-Important database notes from the project docs:
-
-- delivery zones are grouped into Port Harcourt neighborhoods and Rivers State LGAs
-- custom cake pricing is seeded with confirmed bakery values
-- some flavor add-on amounts and custom cake add-on prices are intentionally left blank until confirmed because no real numbers were provided
-- admin role promotion is usually done manually after signup
+4. Visit the local app in the browser and check the menu, auth, cart, and checkout flow.
 
 ## Supabase setup
 
-In the Supabase dashboard:
+The backend data layer is Supabase.
 
-- enable Email auth and magic link sign-in
-- configure the site URL and redirect URLs for local dev
-- add the required authentication redirect target:
+### Required dashboard configuration
+
+- enable Email authentication and Magic Link sign-in
+- configure the app URL and redirect URLs for local development
+- add the callback redirect:
   - `http://localhost:3000/auth/callback`
-- create a storage bucket named `menu-images` for uploaded product imagery
+- create the storage bucket `menu-images`
+- apply the SQL migrations in the correct order
 
-For real deployment, update your site URL and redirect targets to the production origin.
+For production, update the site URL and redirect targets to your hosted domain.
+
+## Database and migrations
+
+The database schema is defined in the migration files under `supabase/migrations`.
+
+The standard order is:
+
+1. `0001_init_schema.sql`
+2. `0002_rls_policies.sql`
+3. `0003_functions_triggers.sql`
+4. `0004_delivery_zone_tiers.sql`
+5. `0005_seed_real_data.sql`
+6. `0006_menu_item_alt_text.sql`
+7. `0007_testimonial_avatars.sql`
+
+These migrations cover:
+
+- categories and menu items
+- custom cake pricing and flavor data
+- delivery zones and fees
+- profiles and addresses
+- orders and order items
+- wishlist and storefront data
+
+### Important notes from the project docs
+
+- delivery zones are grouped into Port Harcourt neighborhoods and Rivers State LGAs
+- custom cake pricing is seeded with confirmed bakery values
+- some flavor upcharge values and custom cake add-on prices were intentionally left empty until the bakery confirms the real numbers
+- admin role assignment is usually handled manually after signup
 
 ## Authentication and guest-order flow
 
 The auth system includes:
 
-- email/password sign-up and login
-- magic-link login
+- email/password signup and login
+- magic link login
 - Google OAuth support
-- callback handling via `app/auth/callback/route.ts`
-- guest-order linking after account verification
+- callback handling through `app/auth/callback/route.ts`
+- guest-order linking after verification
 
-The guest-order linking logic automatically matches a guest order to a confirmed user when their email matches exactly and the order still has no `user_id` attached. This is handled server-side to avoid opening up broad order reads.
+### Guest-order matching
 
-The project also includes a post-checkout account prompt that appears when a paid guest order has no linked user account yet.
+When a guest completes checkout and later signs up or logs in, the app matches the order to the authenticated user by exact email when the order still has no `user_id`. This is done server-side so it does not overexpose order access.
 
-## Menu and cart experience
+This keeps the order model secure while still allowing guest purchases to become linked to a real account when the customer confirms their identity.
 
-The storefront includes:
+## Menu, cart, and storefront behavior
 
-- interactive menu browsing
-- category filtering and search
-- product cards with add-to-cart actions
-- a cart drawer with quantity controls and subtotal updates
-- persisted cart state using Zustand + localStorage
+The storefront contains several important UX features:
 
-The cart logic is intentionally designed to:
+- searchable and filterable menu browsing
+- category navigation
+- cart drawer interaction
+- quantity controls and subtotal recalculation
+- localStorage persistence for the cart
+- custom cake configurator flow
 
-- group identical menu items by shared `menuItemId`
-- treat custom cake lines as distinct only when their config matches exactly
-- preserve cart contents across browser reloads
+### Cart behavior
+
+The cart is intentionally designed to:
+
+- merge duplicate menu items by their `menuItemId`
+- treat custom cakes as unique only when their configuration matches exactly
+- preserve cart contents across reloads
 
 ## Checkout and payment flow
 
-The checkout flow is built around a full order creation and payment lifecycle:
+The checkout flow is a full order lifecycle:
 
-1. customer fills out order details
-2. order summary and delivery/pickup options are submitted
-3. server action validates the order and re-prices items from the database
+1. the customer fills out the form
+2. the order is submitted with delivery or pickup selection
+3. the server validates and re-prices the items from the database
 4. a pending payment order is created
-5. Paystack transaction is initialized
-6. customer pays on the hosted Paystack page
-7. webhook confirms payment
-8. order status is updated and verification page loads
+5. a Paystack transaction is initialized
+6. the customer pays on the hosted Paystack page
+7. the webhook confirms the payment
+8. the order status is updated and the verification page loads
 
-The project includes dedicated routes for:
+Relevant backend routes include:
 
 - order status checking
 - Paystack webhook handling
 - stale or expired order cleanup
 
-This is the key logic that keeps the business flow secure while still allowing a guest customer to check their own payment status without exposing all order data.
+This design keeps payment verification secure while allowing a guest customer to check their own order status without exposing all order data.
+
+## Home page v3 update
+
+The later homepage documentation includes several frontend improvements that were ultimately folded into the main app:
+
+### 1. Custom Cakes was not actually wired in
+
+The old flow treated custom cakes as a separate pricing system, not as rows in `menu_items`. The fix was to create a real `/custom-cakes` page and connect it to the live pricing, flavor, and add-on data instead of leaving users at an empty category view.
+
+### 2. Photo and branding improvements
+
+The final home page iteration used a real hero photo and a stronger brand color system. The new brown accent color (`brand-espresso`) was added so the site had better contrast and a stronger bakery identity than the previous pastel-only palette.
+
+### 3. Testimonials with avatars and swipe support
+
+A `testimonial_avatars` migration adds `avatar_url` support to the testimonials model, and the testimonial carousel was adjusted to show photos or initials, with swipe gestures on top of the auto-advance behavior. The project intentionally avoids fake testimonial data until real reviews are available.
+
+### 4. Performance note
+
+The docs explain that production-like Lighthouse numbers should be measured with a production build (`npm run build` + `npm run start`) rather than relying on the unbundled dev server experience. This is the more realistic performance signal for a mobile user.
 
 ## Notifications and order lifecycle
 
-The project was designed to support:
+The project supports:
 
 - admin order alerts
 - customer email receipts
 - WhatsApp click-to-chat links
 - order expiry for abandoned payments
 
-Some notification and follow-up steps are planned or intentionally deferred until the project requirements are confirmed, but the order lifecycle and webhook hooks are already in place to support them.
+Some parts of the notification flow are intentionally deferred until the bakery confirms the exact business rules, but the lifecycle hooks are already designed for them.
 
-## Remaining project gaps
+## Current gaps and pending decisions
 
-The documentation indicates several items still need confirmation or implementation before the project is fully complete:
+Some items still need real business data before the app is fully production-ready:
 
-- real flavor upcharge amounts for custom cakes
-- real add-on prices for custom cake options
-- actual product photos and menu image URLs
-- final delivery zone pricing and logistics details
-- any remaining admin dashboard and profile pages
-- production-ready notification tuning and operational checks
+- real custom cake flavor upcharges
+- real custom cake add-on prices
+- real product photos and menu image URLs
+- final delivery zone fees and logistics rules
+- remaining admin dashboard or profile screens
+- production-grade notification tuning and operational checks
 
-These are not guesses; they are intentionally left blank until the bakery confirms the real business data.
+These are not guessed values; they are intentionally left blank until the bakery confirms them.
 
 ## Useful commands
 
@@ -216,26 +250,13 @@ npm run build
 npm run lint
 ```
 
-## Implementation notes from the earlier project phases
+## Final project status
 
-The repository historically had several phase-based implementation notes, including:
+The project is in a strong state overall: the menu, cart, auth flow, checkout, and backend payment lifecycle are all represented in the codebase. The main work still left is final data cleanup, content confirmation, and a polished production validation pass.
 
-- auth and magic-link setup
-- Google OAuth support
-- cart implementation
-- checkout flow and payment verification
-- sticky header and menu layout fixes
-- real seed data for bakery content and delivery zones
+The largest remaining tasks are:
 
-Those notes have been combined here into one source of truth so the project is easier to understand without chasing multiple README files.
-
-## Current status
-
-The project is in a strong hybrid state: the storefront UI, cart, auth, checkout flow, and backend payment hooks are all represented in the codebase, while some final business data and UX details still require bakery confirmation before the application can be considered fully production-ready.
-
-The most important next steps are:
-
-- complete the remaining pricing and image data
-- verify all migration data against the bakery source of truth
-- confirm production environment variables and webhook configuration
-- test the full checkout flow end-to-end with Paystack test credentials
+- confirm real pricing and add-on data
+- validate Supabase migrations against the live source of truth
+- confirm environment variables and webhook configuration
+- run end-to-end Paystack testing in a real environment
