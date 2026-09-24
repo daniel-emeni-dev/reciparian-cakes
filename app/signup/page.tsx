@@ -123,6 +123,20 @@ export default function SignupPage() {
             )}
           </div>
 
+          <div>
+            <label className="text-sm font-medium text-stone-700">Confirm password</label>
+             <input
+              type="password"
+              {...passwordForm.register('confirmPassword')}
+              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+            {passwordForm.formState.errors.confirmPassword && (
+              <p className="mt-1 text-xs text-red-600">
+                {passwordForm.formState.errors.confirmPassword.message}
+              </p>
+            )}
+          </div>
+
           <button
             type="submit"
             disabled={passwordForm.formState.isSubmitting}
@@ -132,6 +146,8 @@ export default function SignupPage() {
           </button>
         </form>
       )}
+
+
 
       {tab === 'magic-link' &&
         (linkSent ? (
