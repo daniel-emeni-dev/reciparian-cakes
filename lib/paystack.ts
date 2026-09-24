@@ -83,3 +83,37 @@ export function generateOrderReference(): string {
   const random = crypto.randomBytes(8).toString('hex')
   return `ORD-${Date.now()}-${random}`
 }
+
+interface VerifyTransactionResponse {
+  status: boolean
+  message: string
+  data: {
+    status: string
+    reference: string
+    amount: number
+    currency: string
+  }
+}
+
+/**
+ * Calls Paystack's Verify Transaction endpoint directly. Used as a fallback
+ * when a webhook is late or missing, never as the primary payment path.
+ */
+export async function verifyTransaction(reference: string): Promise<VerifyTransactionResponse> {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY
+  if (!secretKey) throw new Error('Missing PAYSTACK_SECRET_KEY')
+
+  const response = await fetch(
+    `${PAYSTACK_BASE_URL}/transaction/verify/${encodeURIComponent(reference)}`,
+    {
+      headers: { Authorization: `Bearer ${secretKey}` },
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`Paystack verify failed: ${response.status}`)
+  }
+
+  return response.json()
+}
