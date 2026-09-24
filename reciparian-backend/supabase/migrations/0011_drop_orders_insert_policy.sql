@@ -1,0 +1,1 @@
+drop policy "orders_owner_insert" on public.orders;
