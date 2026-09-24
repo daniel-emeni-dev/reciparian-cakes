@@ -4,7 +4,11 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { passwordSignupSchema, magicLinkSchema } from '@/lib/validations/auth'
+import {
+  passwordSignupSchema,
+  magicLinkSchema,
+  type PasswordSignupInput,
+} from '@/lib/validations/auth'
 import { signUpWithPassword, sendMagicLink } from '@/app/actions/auth'
 
 interface Props {
@@ -21,16 +25,17 @@ export function PostCheckoutAccountPrompt({ prefillEmail, prefillName }: Props) 
   const [dismissed, setDismissed] = useState(false)
   const [linkSent, setLinkSent] = useState(false)
 
-  const passwordForm = useForm({
+  const passwordForm = useForm<PasswordSignupInput>({
     resolver: zodResolver(passwordSignupSchema),
-    defaultValues: { fullName: prefillName, email: prefillEmail, password: '' },
+    defaultValues: {
+      fullName: prefillName,
+      email: prefillEmail,
+      password: '',
+      confirmPassword: '',
+    },
   })
 
-  async function createWithPassword(values: {
-    fullName: string
-    email: string
-    password: string
-  }) {
+  async function createWithPassword(values: PasswordSignupInput) {
     const result = await signUpWithPassword(values)
     if (!result.success) {
       toast.error(result.error ?? 'Something went wrong.')
@@ -75,18 +80,42 @@ export function PostCheckoutAccountPrompt({ prefillEmail, prefillName }: Props) 
         <div className="mt-4 space-y-3">
           <form
             onSubmit={passwordForm.handleSubmit(createWithPassword)}
-            className="flex flex-col gap-2 sm:flex-row"
+            className="flex flex-col gap-2"
           >
-            <input
-              type="password"
-              placeholder="Choose a password"
-              {...passwordForm.register('password')}
-              className="flex-1 rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
+            <div>
+              <input
+                type="password"
+                placeholder="Choose a password"
+                autoComplete="new-password"
+                {...passwordForm.register('password')}
+                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+              {passwordForm.formState.errors.password && (
+                <p className="mt-1 text-xs text-red-600">
+                  {passwordForm.formState.errors.password.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="password"
+                placeholder="Confirm your password"
+                autoComplete="new-password"
+                {...passwordForm.register('confirmPassword')}
+                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+              {passwordForm.formState.errors.confirmPassword && (
+                <p className="mt-1 text-xs text-red-600">
+                  {passwordForm.formState.errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+
             <button
               type="submit"
               disabled={passwordForm.formState.isSubmitting}
-              className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-stone-800 disabled:opacity-50"
+              className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-stone-800 disabled:opacity-50 sm:self-start"
             >
               Create account
             </button>
