@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
@@ -99,6 +100,12 @@ export default function LoginPage() {
                 {passwordForm.formState.errors.password.message}
               </p>
             )}
+          </div>
+
+          <div className="text-right">
+            <Link href="/forgot-password" className="text-xs text-stone-600 underline">
+              Forgot password?
+            </Link>
           </div>
 
           <button
