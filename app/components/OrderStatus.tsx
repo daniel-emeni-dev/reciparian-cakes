@@ -163,7 +163,7 @@ export function OrderStatus({ reference }: OrderStatusProps) {
   const [attempt, setAttempt] = useState(0)
   const clearCart = useCartStore((state) => state.clearCart)
 
-  useEffect(() => {
+    useEffect(() => {
     if (!reference) return
 
     const orderReference = reference
@@ -171,12 +171,12 @@ export function OrderStatus({ reference }: OrderStatusProps) {
     const startedAt = Date.now()
     let timer: ReturnType<typeof setTimeout> | undefined
 
-    async function poll() {
+    async function poll(live: boolean, isFinalAttempt: boolean) {
       try {
-        const res = await fetch(`/api/orders/status?reference=${encodeURIComponent(orderReference)}`, {
-          signal: controller.signal,
-          cache: 'no-store',
-        })
+        const url = `/api/orders/status?reference=${encodeURIComponent(orderReference)}${
+          live ? '&live=1' : ''
+        }`
+        const res = await fetch(url, { signal: controller.signal, cache: 'no-store' })
 
         if (res.status === 404 || res.status === 400) {
           setView({ kind: 'not_found' })
@@ -204,14 +204,21 @@ export function OrderStatus({ reference }: OrderStatusProps) {
         console.error('Order status poll failed:', error)
       }
 
-      if (Date.now() - startedAt >= POLL_TIMEOUT_MS) {
+      if (isFinalAttempt) {
         setTimedOut(true)
         return
       }
-      timer = setTimeout(poll, POLL_INTERVAL_MS)
+
+      const elapsed = Date.now() - startedAt
+      const nextIsFinal = elapsed + POLL_INTERVAL_MS >= POLL_TIMEOUT_MS
+      timer = setTimeout(() => poll(nextIsFinal, nextIsFinal), POLL_INTERVAL_MS)
     }
 
-    poll()
+    // A retry (attempt > 0) is the person explicitly asking us to check
+    // again, so that first poll asks Paystack directly instead of only
+    // Supabase. The last poll of every cycle does the same, as a safety
+    // net in case the webhook never arrives at all.
+    poll(attempt > 0, false)
 
     return () => {
       controller.abort()
