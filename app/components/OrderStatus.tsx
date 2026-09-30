@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
 import { z } from 'zod'
 import { useCartStore } from '@/lib/store/cart'
 import { formatNaira } from '@/lib/cart'
@@ -12,7 +13,13 @@ import { PostCheckoutAccountPrompt } from '@/app/components/PostCheckoutAccountP
 const POLL_INTERVAL_MS = 3_000
 // Bank transfers can lag, but polling forever helps nobody: stop and explain instead.
 const POLL_TIMEOUT_MS = 120_000
-const PAID_STATUSES = new Set(['paid', 'awaiting_dispatch', 'ready_for_prep', 'completed'])
+const PAID_STATUSES = new Set([
+  'paid',
+  'awaiting_dispatch',
+  'ready_for_prep',
+  'out_for_delivery',
+  'completed',
+])
 
 const orderStatusResponseSchema = z.object({
   success: z.literal(true),
@@ -104,13 +111,41 @@ function OrderSkeleton() {
   )
 }
 
+function CopyReferenceButton({ reference }: { reference: string }) {
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(reference)
+      toast.success('Order reference copied.')
+    } catch (error) {
+      console.error('Copy order reference failed:', error)
+      toast.error('Could not copy. Please copy it by hand.')
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-brand-pink"
+    >
+      Copy reference
+    </button>
+  )
+}
+
 function ConfirmedOrder({ order, items }: OrderData) {
   return (
     <Card>
       <h1 className="text-2xl font-bold text-foreground">Thank you! 🎂</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Order <span className="font-semibold text-foreground">{order.order_reference}</span> is confirmed.
+                Order <span className="font-semibold text-foreground">{order.order_reference}</span> is confirmed.
       </p>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <CopyReferenceButton reference={order.order_reference} />
+        <Link href={`/track?reference=${encodeURIComponent(order.order_reference)}`} className="text-sm font-medium text-primary underline underline-offset-2">
+          Track this order later
+        </Link>
+      </div>
 
       <ul className="mt-6 divide-y divide-border">
         {items.map((item, index) => (
@@ -163,7 +198,7 @@ export function OrderStatus({ reference }: OrderStatusProps) {
   const [attempt, setAttempt] = useState(0)
   const clearCart = useCartStore((state) => state.clearCart)
 
-    useEffect(() => {
+  useEffect(() => {
     if (!reference) return
 
     const orderReference = reference
@@ -173,9 +208,8 @@ export function OrderStatus({ reference }: OrderStatusProps) {
 
     async function poll(live: boolean, isFinalAttempt: boolean) {
       try {
-        const url = `/api/orders/status?reference=${encodeURIComponent(orderReference)}${
-          live ? '&live=1' : ''
-        }`
+        const url = `/api/orders/status?reference=${encodeURIComponent(orderReference)}${live ? '&live=1' : ''
+          }`
         const res = await fetch(url, { signal: controller.signal, cache: 'no-store' })
 
         if (res.status === 404 || res.status === 400) {
