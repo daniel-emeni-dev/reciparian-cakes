@@ -62,7 +62,7 @@ export async function sendContactAlert(enquiry: ContactEnquiry): Promise<void> {
       ${detailsHtml}
       <p><strong>Message:</strong></p>
       <p>${escapeHtml(enquiry.message).replace(/\n/g, '<br>')}</p>
-      <p style="color:#6b5f5c;font-size:12px;">Reply to the customer using the email or phone above.</p>
+      <p style="color:#6b5f5c;font-size:12px;">Hit reply to answer by email, or use the phone above.</p>
     </div>
   `
 
