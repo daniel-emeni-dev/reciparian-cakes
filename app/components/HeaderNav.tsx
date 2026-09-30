@@ -8,7 +8,11 @@ import { AnimatePresence, motion } from 'framer-motion'
 import type { CurrentUser } from '@/lib/auth/get-current-user'
 import { LogoutButton } from './LogoutButton'
 
-const NAV_LINKS = [{ href: '/menu', label: 'Menu' }] as const
+const NAV_LINKS = [
+  { href: '/menu', label: 'Menu' },
+  { href: '/track', label: 'Track order' },
+  { href: '/contact', label: 'Contact' },
+] as const
 
 interface HeaderNavProps {
   user: CurrentUser | null
