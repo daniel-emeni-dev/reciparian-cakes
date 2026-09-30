@@ -46,7 +46,7 @@ export default async function AdminMenuPage() {
         </Link>
         <h1 className="mt-3 text-2xl font-semibold text-foreground">Manage stock</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-        Switch an item to Sold out and customers cannot order it. Tick the box under an item to keep it on the menu, greyed out, while it is sold out. Otherwise it is hidden.
+          Switch an item to Sold out and customers cannot order it. Tick the box under an item to keep it on the menu, greyed out, while it is sold out. Otherwise it is hidden.
           {items.length > 0 && ` ${soldOutCount} sold out right now.`}
         </p>
       </header>
@@ -64,13 +64,15 @@ export default async function AdminMenuPage() {
               </h2>
               <ul className="mt-3 divide-y divide-border rounded-2xl border border-border bg-surface">
                 {categoryItems.map((item) => (
-                                    <li key={item.id} className="flex items-center justify-between gap-4 p-4">
+                  <li key={item.id} className="flex items-center justify-between gap-4 p-4">
                     <div className="min-w-0">
                       <span className="block text-sm font-medium text-foreground">{item.name}</span>
-                      <ShowWhenSoldOutToggle
-                        menuItemId={item.id}
-                        itemName={item.name}
-                        showWhenSoldOut={item.show_when_sold_out}
+                      <Link href={`/admin/menu/${item.id}`} className="text-xs font-medium text-primary underline underline-offset-2">
+                        Edit details
+                      </Link>
+                      menuItemId={item.id}
+                      itemName={item.name}
+                      showWhenSoldOut={item.show_when_sold_out}
                       />
                     </div>
                     <AvailabilityToggle
