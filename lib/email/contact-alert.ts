@@ -79,5 +79,6 @@ ${enquiry.message}`
     subject: `${heading}: ${safeName}`,
     html,
     text,
+    replyTo: enquiry.email,
   })
 }

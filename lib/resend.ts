@@ -6,6 +6,7 @@ interface SendEmailInput {
   subject: string
   html: string
   text: string
+  replyTo?: string
 }
 
 export async function sendEmail(input: SendEmailInput): Promise<void> {
@@ -27,6 +28,7 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
       subject: input.subject,
       html: input.html,
       text: input.text,
+      ...(input.replyTo ? { reply_to: input.replyTo } : {}),
     }),
   })
 
