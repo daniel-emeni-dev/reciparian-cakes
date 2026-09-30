@@ -14,7 +14,7 @@ export async function getMenuData() {
       )
     `
     )
-    .eq('is_available', true)
+    .or('is_available.eq.true,show_when_sold_out.eq.true')
     .order('name', { ascending: true })
 
   if (error) {
@@ -24,10 +24,13 @@ export async function getMenuData() {
 
   // image_alt_text is guaranteed non-null by the schema default, but
   // fall back to the item name defensively in case older rows exist.
-  return data.map((item) => ({
-    ...item,
-    image_alt_text: item.image_alt_text || item.name,
-  }))
+    // Sold out items that stay visible go to the end, so the top of the menu is always buyable.
+  return data
+    .map((item) => ({
+      ...item,
+      image_alt_text: item.image_alt_text || item.name,
+    }))
+    .sort((a, b) => Number(!a.is_available) - Number(!b.is_available))
 }
 
 export async function getCategories() {

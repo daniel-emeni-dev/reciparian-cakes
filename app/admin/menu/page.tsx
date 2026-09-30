@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { AvailabilityToggle } from '@/app/components/AvailabilityToggle'
+import { ShowWhenSoldOutToggle } from '@/app/components/ShowWhenSoldOutToggle'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -17,7 +18,7 @@ export default async function AdminMenuPage() {
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('menu_items')
-    .select('id, name, is_available, categories ( name )')
+    .select('id, name, is_available, show_when_sold_out, categories ( name )')
     .order('name', { ascending: true })
 
   if (error) {
@@ -45,7 +46,7 @@ export default async function AdminMenuPage() {
         </Link>
         <h1 className="mt-3 text-2xl font-semibold text-foreground">Manage stock</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Switch an item to Sold out and customers stop seeing it and cannot check out with it.
+        Switch an item to Sold out and customers cannot order it. Tick the box under an item to keep it on the menu, greyed out, while it is sold out. Otherwise it is hidden.
           {items.length > 0 && ` ${soldOutCount} sold out right now.`}
         </p>
       </header>
@@ -63,8 +64,15 @@ export default async function AdminMenuPage() {
               </h2>
               <ul className="mt-3 divide-y divide-border rounded-2xl border border-border bg-surface">
                 {categoryItems.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between gap-4 p-4">
-                    <span className="min-w-0 text-sm font-medium text-foreground">{item.name}</span>
+                                    <li key={item.id} className="flex items-center justify-between gap-4 p-4">
+                    <div className="min-w-0">
+                      <span className="block text-sm font-medium text-foreground">{item.name}</span>
+                      <ShowWhenSoldOutToggle
+                        menuItemId={item.id}
+                        itemName={item.name}
+                        showWhenSoldOut={item.show_when_sold_out}
+                      />
+                    </div>
                     <AvailabilityToggle
                       menuItemId={item.id}
                       itemName={item.name}

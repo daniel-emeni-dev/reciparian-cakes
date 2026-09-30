@@ -17,6 +17,7 @@ interface MenuItem {
   image_url: string | null
   image_alt_text: string
   dietary_tags: string[]
+  is_available: boolean
   stock_count: number | null
   min_quantity: number
   categories: { name: string; slug: string } | null
@@ -165,8 +166,10 @@ function MenuItemCard({ item }: { item: MenuItem }) {
   const addItem = useCartStore((state) => state.addItem)
   const openCart = useCartUIStore((state) => state.open)
 
-  // Stock below the minimum order cannot be sold, so it counts as sold out.
-  const isOutOfStock = item.stock_count !== null && item.stock_count < item.min_quantity
+    // Stock below the minimum order cannot be sold, so it counts as sold out.
+  // An item the baker switched off only reaches this card when she chose to keep it visible.
+  const isOutOfStock =
+    !item.is_available || (item.stock_count !== null && item.stock_count < item.min_quantity)
   const hasMinimum = item.min_quantity > 1
 
   const addLabel = hasMinimum ? `Add ${item.min_quantity} to cart` : 'Add to cart'
@@ -186,7 +189,7 @@ function MenuItemCard({ item }: { item: MenuItem }) {
   return (
     <div className="group flex flex-col justify-between overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md">
       <div>
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+        <div className={`relative aspect-[4/3] w-full overflow-hidden bg-muted ${isOutOfStock ? 'grayscale' : ''}`}>
           {item.image_url ? (
             <Image
               src={item.image_url}

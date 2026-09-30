@@ -207,6 +207,7 @@ export type Database = {
           min_quantity: number
           name: string
           price: number
+          show_when_sold_out: boolean
           stock_count: number | null
           updated_at: string
         }
@@ -222,6 +223,7 @@ export type Database = {
           min_quantity?: number
           name: string
           price: number
+          show_when_sold_out?: boolean
           stock_count?: number | null
           updated_at?: string
         }
@@ -237,6 +239,7 @@ export type Database = {
           min_quantity?: number
           name?: string
           price?: number
+          show_when_sold_out?: boolean
           stock_count?: number | null
           updated_at?: string
         }
