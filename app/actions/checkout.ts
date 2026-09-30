@@ -53,11 +53,18 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
           .eq('id', menuItemId)
           .single()
 
-        if (error || !menuItem || !menuItem.is_available) {
-          console.error('Checkout: menu item unavailable', menuItemId, error)
+                if (error || !menuItem) {
+          console.error('Checkout: menu item lookup failed', menuItemId, error)
           return {
             success: false,
             error: 'One of the items in your cart is no longer available. Please review your cart.',
+          }
+        }
+
+        if (!menuItem.is_available) {
+          return {
+            success: false,
+            error: `${menuItem.name} is sold out right now. Please remove it from your cart to continue.`,
           }
         }
 

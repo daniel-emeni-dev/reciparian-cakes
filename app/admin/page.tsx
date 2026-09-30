@@ -67,7 +67,10 @@ export default async function AdminPage({ searchParams }: PageProps<'/admin'>) {
     <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
       <header>
         <h1 className="text-2xl font-semibold text-foreground">Orders</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Signed in as {user.email}</p>
+                <p className="mt-1 text-sm text-muted-foreground">Signed in as {user.email}</p>
+        <Link href="/admin/menu" className="mt-3 inline-flex min-h-10 items-center rounded-full border border-border bg-surface px-4 text-sm font-medium text-foreground transition-colors hover:bg-brand-pink">
+          Manage stock
+        </Link>
       </header>
 
       <nav aria-label="Order views" className="no-scrollbar mt-5 flex gap-2 overflow-x-auto">
