@@ -1,0 +1,1 @@
+export const MENU_IMAGE_BUCKET = 'menu-images'
