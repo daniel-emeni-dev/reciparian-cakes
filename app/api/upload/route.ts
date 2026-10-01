@@ -2,9 +2,13 @@ import { NextResponse } from 'next/server'
 import sharp from 'sharp'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { MENU_IMAGE_BUCKET } from '@/lib/storage'
 
 const MAX_UPLOAD_BYTES = 4.5 * 1024 * 1024 // 4.5MB, matches client-side safety check
-const BUCKET = 'menu-images'
+
+function fail(error: string, status: number) {
+  return NextResponse.json({ success: false, error }, { status })
+}
 
 export async function POST(request: Request) {
   try {
@@ -15,7 +19,7 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return fail('Please log in again to upload photos.', 401)
     }
 
     const { data: profile } = await supabase
@@ -25,41 +29,50 @@ export async function POST(request: Request) {
       .single()
 
     if (profile?.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return fail('You do not have permission to upload photos.', 403)
     }
 
     const formData = await request.formData()
-    const file = formData.get('photo') as File | null
+    const file = formData.get('photo')
 
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    if (!(file instanceof File)) {
+      return fail('Please choose a photo.', 400)
+    }
+    if (!file.type.startsWith('image/')) {
+      return fail('That file is not an image.', 400)
     }
     if (file.size > MAX_UPLOAD_BYTES) {
-      return NextResponse.json({ error: 'File too large' }, { status: 413 })
+      return fail('That photo is too large. Please pick a smaller one.', 413)
     }
 
     const buffer = Buffer.from(await file.arrayBuffer())
 
-    const optimizedBuffer = await sharp(buffer)
-      .rotate()
-      .resize({ width: 1200, fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 80 })
-      .toBuffer()
+    let optimizedBuffer: Buffer
+    try {
+      optimizedBuffer = await sharp(buffer)
+        .rotate()
+        .resize({ width: 1200, fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer()
+    } catch (imageError) {
+      console.error('Image processing failed:', imageError)
+      return fail('That image could not be read. Try a JPG or PNG.', 400)
+    }
 
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}.webp`
+    const filename = `${crypto.randomUUID()}.webp`
 
     const admin = createAdminClient()
     const { data, error } = await admin.storage
-      .from(BUCKET)
+      .from(MENU_IMAGE_BUCKET)
       .upload(filename, optimizedBuffer, { contentType: 'image/webp' })
 
     if (error) throw error
 
-    const { data: urlData } = admin.storage.from(BUCKET).getPublicUrl(data.path)
+    const { data: urlData } = admin.storage.from(MENU_IMAGE_BUCKET).getPublicUrl(data.path)
 
     return NextResponse.json({ success: true, url: urlData.publicUrl })
   } catch (err) {
     console.error('Upload error:', err)
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    return fail('Upload failed. Please try again.', 500)
   }
 }
