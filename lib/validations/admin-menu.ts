@@ -43,3 +43,14 @@ export const menuItemUpdateSchema = menuItemDetailsSchema.extend({
 export type SetAvailabilityInput = z.infer<typeof setAvailabilitySchema>
 export type SetShowWhenSoldOutInput = z.infer<typeof setShowWhenSoldOutSchema> 
 export type MenuItemDetailsInput = z.infer<typeof menuItemDetailsSchema>
+
+export const menuItemImageSchema = z.object({
+  menuItemId: menuItemIdSchema,
+  imageUrl: z.string().url().max(500),
+})
+
+export const uploadResponseSchema = z.object({
+  success: z.boolean(),
+  url: z.string().optional(),
+  error: z.string().optional(),
+})
