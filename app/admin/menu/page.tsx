@@ -70,9 +70,10 @@ export default async function AdminMenuPage() {
                       <Link href={`/admin/menu/${item.id}`} className="text-xs font-medium text-primary underline underline-offset-2">
                         Edit details
                       </Link>
-                      menuItemId={item.id}
-                      itemName={item.name}
-                      showWhenSoldOut={item.show_when_sold_out}
+                      <ShowWhenSoldOutToggle
+                        menuItemId={item.id}
+                        itemName={item.name}
+                        showWhenSoldOut={item.show_when_sold_out}
                       />
                     </div>
                     <AvailabilityToggle
