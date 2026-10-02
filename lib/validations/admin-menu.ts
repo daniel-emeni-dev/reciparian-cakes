@@ -53,4 +53,4 @@ export const uploadResponseSchema = z.object({
   success: z.boolean(),
   url: z.string().optional(),
   error: z.string().optional(),
-})
+})      
