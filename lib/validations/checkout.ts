@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PHONE_MESSAGE, PHONE_PATTERN } from '@/lib/validations/phone'
 
 export const cartLineItemSchema = z.object({
   itemType: z.enum(['menu_item', 'custom_cake']),
@@ -29,7 +30,7 @@ export const checkoutSchema = z.object({
   customerPhone: z
     .string()
     .trim()
-    .regex(/^\+?[0-9\s-]{7,20}$/, 'Enter a valid phone number'),
+    .regex(PHONE_PATTERN, PHONE_MESSAGE),
 
   fulfillmentType: z.enum(['delivery', 'pickup']),
   deliveryZoneId: z.string().uuid().optional(),
