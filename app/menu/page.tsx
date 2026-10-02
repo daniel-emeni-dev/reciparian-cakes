@@ -4,6 +4,8 @@ import { Pacifico } from 'next/font/google'
 import { getMenuData, getCategories } from '@/app/actions/menu'
 import { InteractiveMenu } from '@/app/components/InteractiveMenu'
 import { FadeInSection } from '@/app/components/FadeInSection'
+import { getCurrentUser } from '@/lib/auth/get-current-user'
+import { getWishlistIds } from '@/lib/wishlist/get-wishlist'
 
 const pacifico = Pacifico({
   subsets: ['latin'],
@@ -19,6 +21,8 @@ export const metadata: Metadata = {
 
 export default async function MenuPage() {
   const [menuItems, categories] = await Promise.all([getMenuData(), getCategories()])
+  const user = await getCurrentUser()
+  const wishlistIds = user ? await getWishlistIds(user.id) : []
 
   return (
     <main className="min-h-screen bg-stone-50 px-4 py-12 sm:px-6 lg:px-8">
@@ -39,7 +43,8 @@ export default async function MenuPage() {
               useSearchParams (for the ?category= deep link) — Next.js
               needs this boundary for that hook to work correctly. */}
           <Suspense fallback={<MenuSkeleton />}>
-            <InteractiveMenu initialItems={menuItems} categories={categories} />
+            <InteractiveMenu initialItems={menuItems} categories={categories} wishlistIds={wishlistIds}
+              isSignedIn={user !== null} />
           </Suspense>
         </FadeInSection>
       </div>

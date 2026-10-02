@@ -8,6 +8,8 @@ import { Cake, X } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { useCartUIStore } from '@/lib/store/cart-ui'
 import { formatNaira } from '@/lib/cart'
+import { WishlistButton } from '@/app/components/WishlistButton'
+import { isSoldOut } from '@/lib/menu-availability'
 
 interface MenuItem {
   id: string
@@ -37,10 +39,15 @@ const pillIdleClass = 'bg-muted text-muted-foreground hover:text-foreground'
 export function InteractiveMenu({
   initialItems,
   categories,
+  wishlistIds,
+  isSignedIn,
 }: {
   initialItems: MenuItem[]
   categories: Category[]
+  wishlistIds: string[]
+  isSignedIn: boolean
 }) {
+  const savedIds = useMemo(() => new Set(wishlistIds), [wishlistIds])
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const searchParams = useSearchParams()
@@ -136,9 +143,8 @@ export function InteractiveMenu({
                 key={category.id}
                 type="button"
                 onClick={() => setSelectedCategory(category.slug)}
-                className={`${pillClass} ${
-                  selectedCategory === category.slug ? pillActiveClass : pillIdleClass
-                }`}
+                className={`${pillClass} ${selectedCategory === category.slug ? pillActiveClass : pillIdleClass
+                  }`}
               >
                 {category.name}
               </button>
@@ -154,7 +160,7 @@ export function InteractiveMenu({
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredItems.map((item) => (
-            <MenuItemCard key={item.id} item={item} />
+            <MenuItemCard key={item.id} item={item} isSaved={savedIds.has(item.id)} isSignedIn={isSignedIn} />
           ))}
         </div>
       )}
@@ -162,16 +168,21 @@ export function InteractiveMenu({
   )
 }
 
-function MenuItemCard({ item }: { item: MenuItem }) {
+function MenuItemCard({
+  item,
+  isSaved,
+  isSignedIn,
+}: {
+  item: MenuItem
+  isSaved: boolean
+  isSignedIn: boolean
+}) {
   const addItem = useCartStore((state) => state.addItem)
   const openCart = useCartUIStore((state) => state.open)
 
-    // Stock below the minimum order cannot be sold, so it counts as sold out.
   // An item the baker switched off only reaches this card when she chose to keep it visible.
-  const isOutOfStock =
-    !item.is_available || (item.stock_count !== null && item.stock_count < item.min_quantity)
+  const isOutOfStock = isSoldOut(item)
   const hasMinimum = item.min_quantity > 1
-
   const addLabel = hasMinimum ? `Add ${item.min_quantity} to cart` : 'Add to cart'
 
   function handleAddToCart() {
@@ -208,7 +219,7 @@ function MenuItemCard({ item }: { item: MenuItem }) {
               <span className="text-sm">Photo coming soon</span>
             </div>
           )}
-
+          <WishlistButton menuItemId={item.id} itemName={item.name} initialSaved={isSaved} isSignedIn={isSignedIn} />
           {item.dietary_tags.length > 0 && (
             <div className="absolute right-2 top-2 flex gap-1">
               {item.dietary_tags.map((tag) => (
