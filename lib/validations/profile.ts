@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PHONE_MESSAGE, PHONE_PATTERN } from './phone'
 
 export const profileSchema = z.object({
   fullName: z
@@ -9,7 +10,7 @@ export const profileSchema = z.object({
   phone: z
     .string()
     .trim()
-    .refine((value) => value === '' || /^\+?[0-9 ]{10,16}$/.test(value), 'Please enter a valid phone number.'),
+    .refine((value) => value === '' || PHONE_PATTERN.test(value), PHONE_MESSAGE),
 })
 
 export type ProfileInput = z.infer<typeof profileSchema>
