@@ -101,6 +101,9 @@ export function HeaderNav({ user }: HeaderNavProps) {
               {user ? (
                 <>
                   <p className="truncate px-3 py-1.5 text-xs text-muted-foreground">{user.email}</p>
+                  <Link href="/profile" className="block rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+                    Profile
+                  </Link>
                   <Link href="/orders" className="block rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted">
                     My orders
                   </Link>
@@ -184,6 +187,9 @@ export function HeaderNav({ user }: HeaderNavProps) {
                     <p className="truncate px-3 py-1 text-sm text-muted-foreground">
                       {user.fullName ?? user.email}
                     </p>
+                    <Link href="/profile" className="rounded-lg px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-muted">
+                      Profile
+                    </Link>
                     <Link href="/orders" className="rounded-lg px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-muted">
                       My orders
                     </Link>
