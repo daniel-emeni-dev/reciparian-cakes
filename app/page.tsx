@@ -23,7 +23,7 @@ export default async function HomePage() {
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
           <FadeInSection>
-            <h2 className="text-center text-3xl font-bold text-stone-900">
+            <h2 className="text-center text-3xl font-bold text-foreground">
               What Our Customers Say
             </h2>
           </FadeInSection>
@@ -38,7 +38,7 @@ export default async function HomePage() {
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <FadeInSection>
-          <div className="mx-auto max-w-2xl rounded-2xl bg-brand-cream p-6 text-center text-sm text-stone-700">
+          <div className="mx-auto max-w-2xl rounded-2xl bg-brand-cream p-6 text-center text-sm text-foreground">
             <p>
               <span className="font-semibold">A note on allergens:</span> some of our treats
               contain nuts (coconut, almonds, peanuts, walnuts, pistachios, hazelnuts, and

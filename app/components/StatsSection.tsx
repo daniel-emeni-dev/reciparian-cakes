@@ -12,10 +12,10 @@ export function StatsSection() {
       <div className="mx-auto grid max-w-2xl grid-cols-1 gap-10 text-center sm:grid-cols-2">
         {stats.map((stat, i) => (
           <FadeInSection key={stat.label} delay={i * 0.15}>
-            <p className="text-4xl font-bold text-white sm:text-5xl">
+            <p className="text-4xl font-bold text-primary-foreground sm:text-5xl">
               <AnimatedCounter value={stat.value} suffix={stat.suffix} />
             </p>
-            <p className="mt-2 text-sm font-medium text-stone-300">{stat.label}</p>
+            <p className="mt-2 text-sm font-medium text-primary-foreground/70">{stat.label}</p>
           </FadeInSection>
         ))}
       </div>

@@ -14,7 +14,7 @@ export function CategoryShowcase({ categories }: { categories: Category[] }) {
     <section className="px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <FadeInSection>
-          <h2 className="text-center text-3xl font-bold text-stone-900">Shop by Category</h2>
+          <h2 className="text-center text-3xl font-bold text-foreground">Shop by Category</h2>
         </FadeInSection>
 
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -29,15 +29,14 @@ export function CategoryShowcase({ categories }: { categories: Category[] }) {
 
             return (
               <FadeInSection key={category.id} delay={i * 0.1}>
-                <Link
-                  href={href}
-                  className="group flex flex-col items-center justify-center rounded-2xl border border-stone-200 bg-white p-10 text-center shadow-sm transition-shadow hover:shadow-md"
+                <Link href={href}
+                  className="group flex flex-col items-center justify-center rounded-2xl border border-border bg-surface p-10 text-center shadow-sm transition-shadow hover:shadow-md"
                 >
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-pink transition-colors group-hover:bg-brand-pink-medium">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-pink text-primary transition-colors group-hover:bg-brand-pink-medium">
                     <CakeIcon />
                   </div>
-                  <h3 className="mt-4 text-lg font-bold text-stone-900">{category.name}</h3>
-                  <span className="mt-1 text-sm text-stone-500 underline-offset-4 group-hover:underline">
+                  <h3 className="mt-4 text-lg font-bold text-foreground">{category.name}</h3>
+                  <span className="mt-1 text-sm text-muted-foreground underline-offset-4 group-hover:underline">
                     {category.slug === 'custom-cakes' ? 'Build your cake' : 'Browse menu'}
                   </span>
                 </Link>
