@@ -10,8 +10,15 @@ import { LogoutButton } from './LogoutButton'
 
 const NAV_LINKS = [
   { href: '/menu', label: 'Menu' },
+  { href: '/custom-cakes', label: 'Custom cakes' },
   { href: '/track', label: 'Track order' },
   { href: '/contact', label: 'Contact' },
+] as const
+
+const ACCOUNT_LINKS = [
+  { href: '/profile', label: 'Profile' },
+  { href: '/orders', label: 'My orders' },
+  { href: '/wishlist', label: 'Wishlist' },
 ] as const
 
 interface HeaderNavProps {
@@ -101,15 +108,15 @@ export function HeaderNav({ user }: HeaderNavProps) {
               {user ? (
                 <>
                   <p className="truncate px-3 py-1.5 text-xs text-muted-foreground">{user.email}</p>
-                  <Link href="/profile" className="block rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted">
-                    Profile
-                  </Link>
-                  <Link href="/orders" className="block rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted">
-                    My orders
-                  </Link>
-                  <Link href="/wishlist" className="block rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted">
-                    Wishlist
-                  </Link>
+                  {ACCOUNT_LINKS.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="block rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
                   <LogoutButton
                     onBeforeRedirect={() => setIsAccountOpen(false)}
                     className="w-full rounded-lg px-3 py-1.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
@@ -172,53 +179,64 @@ export function HeaderNav({ user }: HeaderNavProps) {
               transition={{ duration: 0.18 }}
               className="absolute inset-x-0 top-full z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-border bg-background px-4 py-4 shadow-lg sm:hidden"
             >
-              <nav className="flex flex-col gap-1 text-base font-medium text-foreground">
+              {user && (
+                <div className="mb-4 rounded-xl bg-muted px-4 py-3">
+                  <p className="truncate text-base font-semibold text-foreground">
+                    {user.fullName ?? user.email}
+                  </p>
+                  {user.fullName && (
+                    <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                  )}
+                </div>
+              )}
+
+              <MobileSection label="Shop">
                 {NAV_LINKS.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="rounded-lg px-3 py-2.5 transition-colors hover:bg-muted"
+                    className="rounded-lg px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-muted"
                   >
                     {link.label}
                   </Link>
                 ))}
-              </nav>
+              </MobileSection>
 
-              <div className="mt-3 border-t border-border pt-3">
-                {user ? (
-                  <div className="flex flex-col gap-1">
-                    <p className="truncate px-3 py-1 text-sm text-muted-foreground">
-                      {user.fullName ?? user.email}
-                    </p>
-                    <Link href="/profile" className="rounded-lg px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-muted">
-                      Profile
-                    </Link>
-                    <Link href="/orders" className="rounded-lg px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-muted">
-                      My orders
-                    </Link>
-                    <Link href="/wishlist" className="rounded-lg px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-muted">
-                      Wishlist
-                    </Link>
-                    <LogoutButton
-                      onBeforeRedirect={() => setIsMobileOpen(false)}
-                      className="rounded-lg px-3 py-2.5 text-left text-base font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-1">
+              {user && (
+                <MobileSection label="Account">
+                  {ACCOUNT_LINKS.map((link) => (
                     <Link
-                      href="/login"
+                      key={link.href}
+                      href={link.href}
                       className="rounded-lg px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-muted"
                     >
-                      Log in
+                      {link.label}
                     </Link>
+                  ))}
+                </MobileSection>
+              )}
+
+              <div className="mt-4 flex flex-col gap-2 border-t border-border pt-4">
+                {user ? (
+                  <LogoutButton
+                    onBeforeRedirect={() => setIsMobileOpen(false)}
+                    className="w-full rounded-xl border border-border px-4 py-3 text-center text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                  />
+                ) : (
+                  <>
                     <Link
                       href="/signup"
-                      className="rounded-lg px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-muted"
+                      className="rounded-xl bg-primary px-4 py-3 text-center text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90"
                     >
                       Create account
                     </Link>
-                  </div>
+                    <Link
+                      href="/login"
+                      className="rounded-xl border border-border px-4 py-3 text-center text-base font-semibold text-foreground transition-colors hover:bg-muted"
+                    >
+                      Log in
+                    </Link>
+                  </>
                 )}
               </div>
             </motion.div>
@@ -226,6 +244,22 @@ export function HeaderNav({ user }: HeaderNavProps) {
         )}
       </AnimatePresence>
     </>
+  )
+}
+
+interface MobileSectionProps {
+  label: string
+  children: React.ReactNode
+}
+
+function MobileSection({ label, children }: MobileSectionProps) {
+  return (
+    <div className="mt-3 first:mt-0">
+      <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
+      <nav className="flex flex-col gap-0.5">{children}</nav>
+    </div>
   )
 }
 
