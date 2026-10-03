@@ -18,12 +18,12 @@ export async function SiteHeader() {
             aria-label="Reciparian Cakes home"
           >
             <Image src="/reciparian-logo.png" alt="Reciparian Cakes" width={36} height={36} priority />
-            <span className="hidden text-lg font-semibold text-foreground sm:inline">
+            <span className="hidden font-script text-2xl font-semibold text-primary sm:inline">
               Reciparian Cakes
             </span>
           </Link>
 
-                    <div className="flex flex-shrink-0 items-center gap-1 sm:gap-4">
+          <div className="flex flex-shrink-0 items-center gap-1 sm:gap-4">
             <HeaderNav user={user} />
             <CartButton />
           </div>
