@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
-      {/* Background photo — zooms out from 1.15x to 1x once on load,
+      {/* Background photo zooms out from 1.15x to 1x once on load,
           not on every scroll, so it only costs animation work once. */}
       <motion.div
         initial={{ scale: 1.15 }}
@@ -26,7 +26,7 @@ export function Hero() {
       </motion.div>
 
       {/* Gradient overlay for text legibility over the photo */}
-      <div className="absolute inset-0 bg-gradient-to-b from-stone-900/70 via-stone-900/50 to-stone-900/80" />
+      <div className="absolute inset-0 bg-gradient-to-b from-brand-espresso/70 via-brand-espresso/50 to-brand-espresso/80" />
 
       <div className="relative mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 sm:py-28 lg:px-8">
         <motion.div
@@ -48,7 +48,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-6 text-4xl font-bold leading-tight text-white sm:text-5xl"
+          className="mt-6 text-4xl font-bold leading-tight text-primary-foreground sm:text-5xl"
         >
           Handcrafted Cakes &amp; Pastries, Baked Fresh in Port Harcourt
         </motion.h1>
@@ -57,7 +57,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="mx-auto mt-4 max-w-xl text-lg text-white/90"
+          className="mx-auto mt-4 max-w-xl text-lg text-primary-foreground/90"
         >
           From rich custom cakes to warm cinnamon rolls, every order is made from scratch,
           the day you order it.
@@ -69,15 +69,13 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
         >
-          <Link
-            href="/menu"
-            className="rounded-xl bg-brand-espresso px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] hover:bg-brand-espresso-light"
+          <Link href="/menu"
+            className="rounded-xl bg-brand-espresso px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-transform hover:scale-[1.02] hover:bg-brand-espresso-light"
           >
             Shop Fresh Pastries
           </Link>
-          <Link
-            href="/menu"
-            className="rounded-xl border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+          <Link href="/menu"
+            className="rounded-xl border border-primary-foreground/40 bg-primary-foreground/10 px-6 py-3 text-sm font-semibold text-primary-foreground backdrop-blur-sm transition-colors hover:bg-primary-foreground/20"
           >
             View Delivery Menu
           </Link>
@@ -103,7 +101,7 @@ function TrustIndicators() {
   ]
 
   return (
-    <div className="mx-auto mt-10 flex max-w-2xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium text-white/90">
+    <div className="mx-auto mt-10 flex max-w-2xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium text-primary-foreground/90">
       {indicators.map((item) => (
         <span key={item.label} className="flex items-center gap-1.5">
           {item.icon}

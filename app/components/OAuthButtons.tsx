@@ -8,7 +8,7 @@ export function OAuthButtons() {
       <form action={() => signInWithOAuth('google')}>
         <button
           type="submit"
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-stone-300 bg-white py-2.5 text-sm font-medium text-stone-800 transition-colors hover:bg-stone-50"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-muted-foreground/30 bg-surface py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
         >
           <GoogleIcon />
           Continue with Google
@@ -16,9 +16,9 @@ export function OAuthButtons() {
       </form>
 
       {/*
-        Apple Sign In — build this in once the $99/year Apple Developer
+        Apple Sign In: build this in once the $99/year Apple Developer
         account is active and 'apple' has been added to Supabase
-        Authentication → Providers, plus the OAuthProvider union in
+        Authentication Providers, plus the OAuthProvider union in
         app/actions/oauth.ts.
 
         <form action={() => signInWithOAuth('apple')}>

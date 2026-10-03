@@ -21,9 +21,9 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
 
   if (testimonials.length === 0) {
     return (
-      <div className="rounded-2xl border border-stone-200 bg-white p-10 text-center">
-        <p className="text-stone-600">
-          We&apos;re just getting started collecting reviews — check back soon, or be the first
+      <div className="rounded-2xl border border-border bg-surface p-10 text-center">
+        <p className="text-muted-foreground">
+          We&apos;re just getting started collecting reviews. Check back soon, or be the first
           to share yours after your order!
         </p>
       </div>
@@ -46,7 +46,7 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
   }
 
   return (
-    <div className="relative mx-auto max-w-xl overflow-hidden rounded-2xl border border-stone-200 bg-white p-8 text-center">
+    <div className="relative mx-auto max-w-xl overflow-hidden rounded-2xl border border-border bg-surface p-8 text-center">
       <AnimatePresence mode="wait">
         <motion.div
           key={current.id}
@@ -67,8 +67,8 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
               <StarIcon key={i} filled={i < current.rating} />
             ))}
           </div>
-          <p className="mt-3 text-stone-700">&ldquo;{current.message}&rdquo;</p>
-          <p className="mt-4 text-sm font-semibold text-stone-900">{current.customer_name}</p>
+          <p className="mt-3 text-foreground">&ldquo;{current.message}&rdquo;</p>
+          <p className="mt-4 text-sm font-semibold text-foreground">{current.customer_name}</p>
         </motion.div>
       </AnimatePresence>
 
@@ -81,7 +81,7 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
               onClick={() => setIndex(i)}
               aria-label={`Show testimonial ${i + 1}`}
               className={`h-1.5 rounded-full transition-all ${
-                i === index ? 'w-6 bg-brand-pink-medium' : 'w-1.5 bg-stone-200'
+                i === index ? 'w-6 bg-brand-pink-deep' : 'w-1.5 bg-muted-foreground/30'
               }`}
             />
           ))}
@@ -104,7 +104,7 @@ function Avatar({ name, avatarUrl }: { name: string; avatarUrl: string | null })
       {avatarUrl ? (
         <Image src={avatarUrl} alt="" fill sizes="56px" className="object-cover" />
       ) : (
-        <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-stone-700">
+        <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-primary">
           {initials}
         </div>
       )}
@@ -119,7 +119,7 @@ function StarIcon({ filled }: { filled: boolean }) {
       height="16"
       viewBox="0 0 24 24"
       fill={filled ? 'currentColor' : 'none'}
-      className={filled ? 'text-amber-500' : 'text-stone-300'}
+      className={filled ? 'text-brand-pink-deep' : 'text-muted-foreground/30'}
       aria-hidden="true"
     >
       <path
