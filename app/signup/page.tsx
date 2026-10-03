@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
@@ -13,6 +14,13 @@ import {
 import { signUpWithPassword, sendMagicLink } from '@/app/actions/auth'
 
 type Tab = 'password' | 'magic-link'
+
+const LABEL_CLASSES = 'text-sm font-medium text-foreground'
+const INPUT_CLASSES =
+  'mt-1 w-full rounded-lg border border-muted-foreground/30 bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
+const ERROR_CLASSES = 'mt-1 text-xs text-danger'
+const PRIMARY_BUTTON_CLASSES =
+  'w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50'
 
 export default function SignupPage() {
   const [tab, setTab] = useState<Tab>('password')
@@ -51,27 +59,25 @@ export default function SignupPage() {
 
   return (
     <div className="mx-auto w-full max-w-sm px-4 py-16">
-      <h1 className="text-2xl font-semibold text-stone-900">Create your account</h1>
-      <p className="mt-1 text-sm text-stone-600">
+      <h1 className="text-2xl font-semibold text-foreground">Create your account</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         Save your addresses, track orders, and check out faster next time.
       </p>
 
-      <div className="mt-6 flex gap-2 rounded-xl bg-stone-100 p-1">
+      <div className="mt-6 flex gap-2 rounded-xl bg-muted p-1">
         <button
           type="button"
           onClick={() => setTab('password')}
-          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
-            tab === 'password' ? 'bg-white shadow-sm text-stone-900' : 'text-stone-500'
-          }`}
+          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${tab === 'password' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground'
+            }`}
         >
           Password
         </button>
         <button
           type="button"
           onClick={() => setTab('magic-link')}
-          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
-            tab === 'magic-link' ? 'bg-white shadow-sm text-stone-900' : 'text-stone-500'
-          }`}
+          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${tab === 'magic-link' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground'
+            }`}
         >
           Magic Link
         </button>
@@ -83,55 +89,52 @@ export default function SignupPage() {
           className="mt-6 space-y-4"
         >
           <div>
-            <label className="text-sm font-medium text-stone-700">Full name</label>
+            <label className={LABEL_CLASSES}>Full name</label>
             <input
               {...passwordForm.register('fullName')}
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className={INPUT_CLASSES}
             />
             {passwordForm.formState.errors.fullName && (
-              <p className="mt-1 text-xs text-red-600">
+              <p className={ERROR_CLASSES}>
                 {passwordForm.formState.errors.fullName.message}
               </p>
             )}
           </div>
 
           <div>
-            <label className="text-sm font-medium text-stone-700">Email</label>
-            <input
-              type="email"
+            <label className={LABEL_CLASSES}>Email</label>
+            <input type="email"
               {...passwordForm.register('email')}
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className={INPUT_CLASSES}
             />
             {passwordForm.formState.errors.email && (
-              <p className="mt-1 text-xs text-red-600">
+              <p className={ERROR_CLASSES}>
                 {passwordForm.formState.errors.email.message}
               </p>
             )}
           </div>
 
           <div>
-            <label className="text-sm font-medium text-stone-700">Password</label>
-            <input
-              type="password"
+            <label className={LABEL_CLASSES}>Password</label>
+            <input type="password"
               {...passwordForm.register('password')}
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className={INPUT_CLASSES}
             />
             {passwordForm.formState.errors.password && (
-              <p className="mt-1 text-xs text-red-600">
+              <p className={ERROR_CLASSES}>
                 {passwordForm.formState.errors.password.message}
               </p>
             )}
           </div>
 
           <div>
-            <label className="text-sm font-medium text-stone-700">Confirm password</label>
-             <input
-              type="password"
+            <label className={LABEL_CLASSES}>Confirm password</label>
+            <input type="password"
               {...passwordForm.register('confirmPassword')}
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className={INPUT_CLASSES}
             />
             {passwordForm.formState.errors.confirmPassword && (
-              <p className="mt-1 text-xs text-red-600">
+              <p className={ERROR_CLASSES}>
                 {passwordForm.formState.errors.confirmPassword.message}
               </p>
             )}
@@ -140,18 +143,16 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={passwordForm.formState.isSubmitting}
-            className="w-full rounded-xl bg-stone-900 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-stone-800 disabled:opacity-50"
+            className={PRIMARY_BUTTON_CLASSES}
           >
             {passwordForm.formState.isSubmitting ? 'Creating account...' : 'Create account'}
           </button>
         </form>
       )}
 
-
-
       {tab === 'magic-link' &&
         (linkSent ? (
-          <p className="mt-6 rounded-xl bg-stone-50 p-4 text-sm text-stone-700">
+          <p className="mt-6 rounded-xl bg-muted p-4 text-sm text-foreground">
             Check your email for a link to finish signing up.
           </p>
         ) : (
@@ -160,14 +161,13 @@ export default function SignupPage() {
             className="mt-6 space-y-4"
           >
             <div>
-              <label className="text-sm font-medium text-stone-700">Email</label>
-              <input
-                type="email"
+              <label className={LABEL_CLASSES}>Email</label>
+              <input type="email"
                 {...magicLinkForm.register('email')}
-                className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className={INPUT_CLASSES}
               />
               {magicLinkForm.formState.errors.email && (
-                <p className="mt-1 text-xs text-red-600">
+                <p className={ERROR_CLASSES}>
                   {magicLinkForm.formState.errors.email.message}
                 </p>
               )}
@@ -176,18 +176,18 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={magicLinkForm.formState.isSubmitting}
-              className="w-full rounded-xl bg-stone-900 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-stone-800 disabled:opacity-50"
+              className={PRIMARY_BUTTON_CLASSES}
             >
               {magicLinkForm.formState.isSubmitting ? 'Sending...' : 'Send magic link'}
             </button>
           </form>
         ))}
 
-      <p className="mt-6 text-center text-sm text-stone-600">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <a href="/login" className="font-medium text-stone-900 underline">
+        <Link href="/login" className="font-medium text-foreground underline">
           Log in
-        </a>
+        </Link>
       </p>
     </div>
   )
