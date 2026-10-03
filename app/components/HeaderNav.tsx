@@ -107,6 +107,9 @@ export function HeaderNav({ user }: HeaderNavProps) {
                   <Link href="/orders" className="block rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted">
                     My orders
                   </Link>
+                  <Link href="/wishlist" className="block rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+                    Wishlist
+                  </Link>
                   <LogoutButton
                     onBeforeRedirect={() => setIsAccountOpen(false)}
                     className="w-full rounded-lg px-3 py-1.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
@@ -192,6 +195,9 @@ export function HeaderNav({ user }: HeaderNavProps) {
                     </Link>
                     <Link href="/orders" className="rounded-lg px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-muted">
                       My orders
+                    </Link>
+                    <Link href="/wishlist" className="rounded-lg px-3 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-muted">
+                      Wishlist
                     </Link>
                     <LogoutButton
                       onBeforeRedirect={() => setIsMobileOpen(false)}
