@@ -16,7 +16,7 @@ export const bakeryLocation = {
   addressLine: '4 George Amewhule Street, Rumuigbo, Port Harcourt, Rivers State, Nigeria',
   directions:
     'Off Psychiatric Road, then turn onto Transformer Road to reach George Amewhule Street.',
-  hours: 'Monday–Saturday, 9:00 AM – 5:30 PM (closed Sundays)',
+    hours: 'Monday to Saturday, 9:00 AM to 5:30 PM (closed Sundays)',
 }
 
 export const careCard = {
@@ -42,7 +42,7 @@ export const careCard = {
     cakes:
       "For short-term consumption, it's best preserved in the fridge and will keep for over a week as long as the fridge is on steadily. To keep the cake longer, wrap it in cling film and then foil (this prevents the cake from becoming dry) and freeze it.",
     treats:
-      "Keep refrigerated if not finished right away, microwave when ready to eat — they're so good when warm!",
+      "Keep refrigerated if not finished right away, microwave when ready to eat. They're so good when warm!",
   },
   feedbackNote:
     "We hope our care card was helpful and that you enjoyed your treat. We'd love honest feedback on our service, design, presentation, and taste. Take a picture and share with us on socials!",
