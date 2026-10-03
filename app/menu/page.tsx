@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { getMenuData, getCategories } from '@/app/actions/menu'
 import { InteractiveMenu } from '@/app/components/InteractiveMenu'
+import { MenuGridSkeleton } from '@/app/components/MenuGridSkeleton'
 import { FadeInSection } from '@/app/components/FadeInSection'
 import { getCurrentUser } from '@/lib/auth/get-current-user'
 import { getWishlistIds } from '@/lib/wishlist/get-wishlist'
@@ -35,7 +36,7 @@ export default async function MenuPage() {
           {/* Suspense is required here because InteractiveMenu reads
               useSearchParams (for the ?category= deep link). Next.js
               needs this boundary for that hook to work correctly. */}
-          <Suspense fallback={<MenuSkeleton />}>
+          <Suspense fallback={<MenuGridSkeleton />}>
             <InteractiveMenu
               initialItems={menuItems}
               categories={categories}
@@ -46,21 +47,5 @@ export default async function MenuPage() {
         </FadeInSection>
       </div>
     </main>
-  )
-}
-
-function MenuSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="animate-pulse overflow-hidden rounded-xl border border-border bg-surface">
-          <div className="aspect-[4/3] bg-muted" />
-          <div className="space-y-2 p-5">
-            <div className="h-3 w-20 rounded bg-muted" />
-            <div className="h-4 w-32 rounded bg-muted" />
-          </div>
-        </div>
-      ))}
-    </div>
   )
 }
