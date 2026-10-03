@@ -1,7 +1,7 @@
 export const BAKERY = {
   name: 'Reciparian Cakes',
   pickupAddress: '4 George Amewhule Street, Rumuigbo, Port Harcourt',
-  pickupHours: 'Mon–Sat, 9:00 AM – 5:30 PM',
+  pickupHours: 'Mon to Sat, 9:00 AM to 5:30 PM',
   openingHours: 'Monday to Saturday, 9:00 AM to 5:30 PM',
   deliveryHours: '10:00 AM to 4:00 PM',
   responseTime: 'within 24 hours',

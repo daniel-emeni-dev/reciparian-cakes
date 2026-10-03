@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { PHONE_MESSAGE, PHONE_PATTERN } from './phone'
+import { PHONE_MESSAGE, PHONE_PATTERN } from '@/lib/validations/phone'
 
 export const profileSchema = z.object({
   fullName: z
