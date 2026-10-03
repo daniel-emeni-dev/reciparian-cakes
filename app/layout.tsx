@@ -4,6 +4,7 @@ import "./globals.css";
 import { SiteHeader } from "./components/SiteHeader";
 import { Toaster } from "sonner";
 import { SiteFooter } from "@/app/components/SiteFooter";
+import { MotionProvider } from "@/app/components/MotionProvider";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -55,9 +56,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${dmSans.variable} ${playfair.variable} ${dancingScript.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SiteHeader />
-        {children}
-        <SiteFooter />
+        <MotionProvider>
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+        </MotionProvider>
         <Toaster position="top-center" richColors />
       </body>
     </html>
