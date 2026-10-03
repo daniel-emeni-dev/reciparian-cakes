@@ -23,8 +23,9 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-danger: var(--danger);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-dm-sans);
+  --font-heading: var(--font-playfair);
+  --font-script: var(--font-dancing-script);
 }
 
 @theme {
@@ -43,7 +44,15 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading), Georgia, serif;
+  }
 }
 
 @utility no-scrollbar {
