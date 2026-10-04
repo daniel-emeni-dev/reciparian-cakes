@@ -5,6 +5,9 @@ import { StatsSection } from '@/app/components/StatsSection'
 import { CategoryShowcase } from '@/app/components/CategoryShowcase'
 import { TestimonialsCarousel } from '@/app/components/TestimonialsCarousel'
 import { FadeInSection } from '@/app/components/FadeInSection'
+import Link from 'next/link'
+import { FaqAccordion } from '@/app/components/FaqAccordion'
+import { HOME_FAQS } from '@/lib/content/faqs'
 
 export default async function HomePage() {
   const [categories, testimonials] = await Promise.all([
@@ -33,6 +36,28 @@ export default async function HomePage() {
               <TestimonialsCarousel testimonials={testimonials} />
             </FadeInSection>
           </div>
+        </div>
+      </section>
+
+            <section aria-labelledby="home-faq-heading" className="px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <FadeInSection>
+            <h2
+              id="home-faq-heading"
+              className="text-center text-3xl font-bold text-foreground"
+            >
+              Quick answers
+            </h2>
+          </FadeInSection>
+
+          <FadeInSection delay={0.1}>
+            <FaqAccordion items={HOME_FAQS} />
+            <p className="mt-6 text-center text-sm">
+              <Link href="/contact#faq" className="font-medium text-primary underline underline-offset-4">
+                See all questions
+              </Link>
+            </p>
+          </FadeInSection>
         </div>
       </section>
 
