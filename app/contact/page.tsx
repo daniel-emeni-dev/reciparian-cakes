@@ -6,36 +6,12 @@ import { FadeInSection } from '@/app/components/FadeInSection'
 import { SocialLinks } from '@/app/components/SocialLinks'
 import { BAKERY } from '@/lib/bakery'
 import { FaqAccordion } from '@/app/components/FaqAccordion'
+import { FAQS } from '@/lib/content/faqs'
 
 export const metadata: Metadata = {
   title: 'Contact us',
   description: `Get in touch with ${BAKERY.name} for custom cakes, orders and questions.`,
 }
-
-const FAQS = [
-  {
-    question: 'How long before my order is ready?',
-    answer:
-      'Every order needs 24 hours. For pickup, the 24 hours starts when you place the order. For delivery, it starts when we mark your order as being prepared, and we deliver after that.',
-  },
-  {
-    question: 'When do you deliver?',
-    answer: `Deliveries run from ${BAKERY.deliveryHours}, depending on when your order is ready. The delivery fee depends on your area in Port Harcourt and shows at checkout before you pay.`,
-  },
-  {
-    question: 'What about allergies?',
-    answer:
-      'Some of our treats contain nuts such as coconut, almonds, peanuts, walnuts, pistachios and hazelnuts, and some are infused with alcohol. Cakes can also hold dowel rods and decorations that are not edible. If you have an allergy, tell us before you order.',
-  },
-  {
-    question: 'Do you offer refunds?',
-    answer: `We do not offer refunds on orders or on delivery fees. If something is wrong with your order, message us on WhatsApp at ${BAKERY.phoneDisplay} and tell us what happened.`,
-  },
-  {
-    question: 'How fast do you reply?',
-    answer: `We reply to every enquiry ${BAKERY.responseTime}.`,
-  },
-] as const
 
 const mapQuery = encodeURIComponent(BAKERY.pickupAddress)
 
@@ -154,7 +130,7 @@ export default function ContactPage() {
         </FadeInSection>
 
         <FadeInSection>
-          <section aria-labelledby="faq-heading">
+            <section id="faq" aria-labelledby="faq-heading" className="scroll-mt-24">
             <h2 id="faq-heading" className="text-center text-2xl font-bold text-primary">
               Questions we get a lot
             </h2>
