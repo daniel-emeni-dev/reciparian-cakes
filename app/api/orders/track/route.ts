@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { trackOrderSchema } from '@/lib/validations/track'
+import { checkRateLimit, getClientIp, RATE_LIMIT_MESSAGE, RATE_LIMITS } from '@/lib/rate-limit'
 
 const NO_STORE = { 'Cache-Control': 'no-store' }
 
@@ -25,6 +26,10 @@ const ORDER_SELECT = `
 
 export async function POST(request: Request) {
   try {
+    const allowed = await checkRateLimit(RATE_LIMITS.track, await getClientIp())
+    if (!allowed) {
+      return fail(RATE_LIMIT_MESSAGE, 429)
+    }
     const body: unknown = await request.json().catch(() => null)
     const parsed = trackOrderSchema.safeParse(body)
 
