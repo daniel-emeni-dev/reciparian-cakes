@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkoutSchema, type CheckoutInput } from '@/lib/validations/checkout'
 import { calculateSubtotal, calculateTotals, type PricedLine } from '@/lib/cart'
 import { initializeTransaction, generateOrderReference } from '@/lib/paystack'
+import { checkRateLimit, getClientIp, RATE_LIMITS, RATE_LIMIT_MESSAGE } from '@/lib/rate-limit'
 
 export interface CheckoutResult {
   success: boolean
@@ -19,6 +20,11 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
     return { success: false, error: 'Invalid checkout data.' }
   }
   const data = parsed.data
+
+  const allowed = await checkRateLimit(RATE_LIMITS.checkout, await getClientIp())
+  if (!allowed) {
+    return { success: false, error: RATE_LIMIT_MESSAGE }
+  }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
   if (!siteUrl) {
@@ -53,7 +59,7 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
           .eq('id', menuItemId)
           .single()
 
-                if (error || !menuItem) {
+        if (error || !menuItem) {
           console.error('Checkout: menu item lookup failed', menuItemId, error)
           return {
             success: false,
@@ -98,7 +104,7 @@ export async function checkout(input: CheckoutInput): Promise<CheckoutResult> {
           return { success: false, error: 'Invalid custom cake configuration.' }
         }
 
-               let unitPrice = pricing.base_price
+        let unitPrice = pricing.base_price
 
         const { data: flavor, error: flavorError } = await admin
           .from('custom_cake_flavors')
