@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit, RATE_LIMIT_MESSAGE, RATE_LIMITS } from '@/lib/rate-limit'
 
 export interface WishlistResult {
   success: boolean
@@ -22,6 +23,9 @@ export async function addToWishlist(menuItemId: string): Promise<WishlistResult>
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) return { success: false, error: 'Please log in to save favorites.' }
+
+    const allowed = await checkRateLimit(RATE_LIMITS.wishlist, user.id)
+    if (!allowed) return { success: false, error: RATE_LIMIT_MESSAGE }
 
     const { error } = await supabase
       .from('wishlist_items')
@@ -49,6 +53,8 @@ export async function removeFromWishlist(menuItemId: string): Promise<WishlistRe
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) return { success: false, error: 'Please log in again.' }
+    const allowed = await checkRateLimit(RATE_LIMITS.wishlist, user.id)
+    if (!allowed) return { success: false, error: RATE_LIMIT_MESSAGE }
 
     const { error } = await supabase
       .from('wishlist_items')

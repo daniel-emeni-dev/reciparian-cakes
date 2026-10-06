@@ -3,6 +3,7 @@ import sharp from 'sharp'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { MENU_IMAGE_BUCKET } from '@/lib/storage'
+import { checkRateLimit, RATE_LIMIT_MESSAGE, RATE_LIMITS } from '@/lib/rate-limit'
 
 const MAX_UPLOAD_BYTES = 4.5 * 1024 * 1024 // 4.5MB, matches client-side safety check
 
@@ -30,6 +31,11 @@ export async function POST(request: Request) {
 
     if (profile?.role !== 'admin') {
       return fail('You do not have permission to upload photos.', 403)
+    }
+
+    const allowed = await checkRateLimit(RATE_LIMITS.upload, user.id)
+    if (!allowed) {
+      return fail(RATE_LIMIT_MESSAGE, 429)
     }
 
     const formData = await request.formData()
