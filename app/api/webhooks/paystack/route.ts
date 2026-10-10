@@ -68,15 +68,15 @@ export async function POST(request: Request) {
       return reject('Settle failed', 500)
     }
 
-    switch (result.outcome) {
-      case 'not_found':
-        console.error('Paystack webhook: order not found for reference', reference)
-        return reject('Order not found', 404)
-      case 'amount_mismatch':
-        return reject('Amount mismatch', 400)
-      default:
-        return acknowledge()
+    if (result.outcome === 'not_found') {
+      console.error('Paystack webhook: order not found for reference', reference)
     }
+
+    // Payments that could not be applied are reported to the baker by email inside
+    // settlePaidOrder. An error status here would only make Paystack retry something
+    // that can never succeed.
+    return acknowledge()
+
   } catch (err) {
     console.error('Paystack webhook error:', err)
     return reject('Webhook processing failed', 500)

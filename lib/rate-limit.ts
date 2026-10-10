@@ -16,6 +16,7 @@ export const RATE_LIMITS = {
   track: { name: 'track', limit: 15, windowSeconds: 600 },
   upload: { name: 'upload', limit: 30, windowSeconds: 600 },
   wishlist: { name: 'wishlist', limit: 60, windowSeconds: 60 },
+  paymentReview: { name: 'payment-review', limit: 1, windowSeconds: 86400 },
 } as const satisfies Record<string, RateLimitRule>
 
 export async function getClientIp(): Promise<string> {
