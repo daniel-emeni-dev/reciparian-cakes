@@ -1,6 +1,11 @@
 import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendAdminOrderAlert } from '@/lib/email/admin-alert'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
+import {
+  sendPaymentReviewAlert,
+  type PaymentReviewAlertInput,
+} from '@/lib/email/payment-review-alert'
 
 const ALREADY_PAID_STATUSES = [
   'paid',
@@ -27,6 +32,21 @@ export type SettleOutcome =
   | 'amount_mismatch'
   | 'not_usable'
   | 'not_found'
+
+// Repeats happen (webhook retries, the verify page polling), so the limiter
+// makes sure the baker gets one email per reference and reason per day.
+async function reportUnappliedPayment(input: PaymentReviewAlertInput): Promise<void> {
+  try {
+    const isFirstReport = await checkRateLimit(
+      RATE_LIMITS.paymentReview,
+      `${input.orderReference}:${input.reason}`
+    )
+    if (!isFirstReport) return
+    await sendPaymentReviewAlert(input)
+  } catch (alertError) {
+    console.error('settlePaidOrder: payment review alert failed', alertError)
+  }
+}
 
 /**
  * The single place that turns a successful Paystack charge into a paid
@@ -56,7 +76,16 @@ export async function settlePaidOrder(
     throw fetchError
   }
 
-  if (!order) return { outcome: 'not_found' }
+  if (!order) {
+    await reportUnappliedPayment({
+      reason: 'not_found',
+      orderReference,
+      amountReceivedKobo: charge.amount,
+      expectedAmountKobo: null,
+      orderStatus: null,
+    })
+    return { outcome: 'not_found' }
+  }
 
   if (ALREADY_PAID_STATUSES.includes(order.status as (typeof ALREADY_PAID_STATUSES)[number])) {
     return { outcome: 'already_paid' }
@@ -67,6 +96,13 @@ export async function settlePaidOrder(
       orderReference,
       orderStatus: order.status,
     })
+    await reportUnappliedPayment({
+      reason: 'not_payable',
+      orderReference,
+      amountReceivedKobo: charge.amount,
+      expectedAmountKobo: order.total,
+      orderStatus: order.status,
+    })
     return { outcome: 'not_payable' }
   }
 
@@ -75,6 +111,13 @@ export async function settlePaidOrder(
       orderReference,
       expected: order.total,
       received: charge.amount,
+    })
+    await reportUnappliedPayment({
+      reason: 'amount_mismatch',
+      orderReference,
+      amountReceivedKobo: charge.amount,
+      expectedAmountKobo: order.total,
+      orderStatus: order.status,
     })
     return { outcome: 'amount_mismatch' }
   }
