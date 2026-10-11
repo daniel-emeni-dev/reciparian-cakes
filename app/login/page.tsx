@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
+import { OAuthButtons } from '@/app/components/OAuthButtons'
 import {
   passwordLoginSchema,
   magicLinkSchema,
@@ -58,7 +59,17 @@ export default function LoginPage() {
       <h1 className="text-2xl font-semibold text-foreground">Log in</h1>
       <p className="mt-1 text-sm text-muted-foreground">Welcome back to Reciparian Cakes.</p>
 
-      <div className="mt-6 flex gap-2 rounded-xl bg-muted p-1">
+      <div className="mt-6">
+        <OAuthButtons />
+      </div>
+
+      <div className="mt-5 flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">or</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <div className="mt-5 flex gap-2 rounded-xl bg-muted p-1">
         <button
           type="button"
           onClick={() => setTab('password')}
